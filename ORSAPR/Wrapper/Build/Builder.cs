@@ -3,17 +3,13 @@ using Kompas6Constants3D;
 using KompasAPI7;
 using System;
 using System.IO;
+using System.Security.Cryptography;
 
 namespace ORSAPR
 {
     /// <summary>
     /// Класс для построения 3D-модели сверла в КОМПАС-3D.
     /// </summary>
-    /// <remarks>
-    /// Класс обеспечивает создание 3D-модели сверла на основе заданных параметров,
-    /// включая формирование профиля, спиральных канавок и сохранение результата.
-    /// Для работы требуется установленный и запущенный КОМПАС-3D.
-    /// </remarks>
     public class Builder
     {
         /// <summary>
@@ -29,137 +25,19 @@ namespace ORSAPR
         /// <c>true</c> - если модель успешно построена; 
         /// <c>false</c> - в случае ошибки подключения к КОМПАС-3D или построения модели.
         /// </returns>
-        /// <remarks>
-        /// Метод выполняет следующую последовательность действий:
-        /// <list type="number">
-        /// <item><description>Подключение к КОМПАС-3D через <see cref="Wrapper.ConnectCAD"/></description></item>
-        /// <item><description>Создание нового 3D-документа через <see cref="Wrapper.CreateDocument"/></description></item>
-        /// <item><description>Создание эскиза профиля сверла в плоскости XOZ</description></item>
-        /// <item><description>Построение контура сверла с учетом обратного конуса (если задан)</description></item>
-        /// <item><description>Создание тела вращения для формирования основного цилиндра сверла</description></item>
-        /// <item><description>Создание цилиндрической спирали для основной спиральной канавки</description></item>
-        /// <item><description>Создание конической спирали для хвостовика</description></item>
-        /// <item><description>Формирование спиральных канавок с использованием эволюции по спиралям</description></item>
-        /// <item><description>Круговое копирование канавок для формирования двух противоположных канавок</description></item>
-        /// </list>
-        /// В случае возникновения исключения выполняется его обработка и возвращается <c>false</c>.
-        /// </remarks>
-        /// <example>
-        /// <code>
-        /// var parameters = new Parameters();
-        /// var builder = new Builder();
-        /// bool success = builder.Build(parameters);
-        /// if (success)
-        /// {
-        ///     Console.WriteLine("Модель успешно построена");
-        /// }
-        /// </code>
-        /// </example>
         public bool Build(Parameters parameters)
         {
             try
             {
-                if (!_wrapper.ConnectCAD())
+                if (!InitializeKompas())
                 {
                     return false;
                 }
 
-                if (!_wrapper.CreateDocument())
-                {
-                    return false;
-                }
-
-                ksEntity sketch = _wrapper.CreateSketch((short)Obj3dType.o3d_planeXOZ);
-
-                ksDocument2D doc2D = _wrapper.BeginSketchEdit(sketch);
-
-                // Параметры
-                double radius = parameters.Diameter / 2;
-                double totalLength = parameters.TotalLength;
-                double workingLength = parameters.Length;
-                double tailLength = totalLength - workingLength;
-                double pointAngle = parameters.Angle;
-
-                if (parameters.ClearanceCone != false)
-                {
-                    double cone = parameters.ConeValue / 2;
-
-                    // 1. Точка 0, 0
-                    double x1 = 0;
-                    double z1 = 0;
-
-                    // 2. Точка, по x на cone, z2 = 0 = z1;
-                    double x2 = cone;
-
-                    // 3. x3 = radius, z3 = tailLength
-                    double x3 = radius;
-                    double z3 = tailLength;
-
-                    // 4 x4 = radius, z4 = totalLength
-                    double z4 = totalLength;
-
-                    //5 x5 = 0, z5 = totalLength
-
-                    // Рисуем первую линию от 1 точки ко 2
-                    _wrapper.DrawLineSeg(doc2D, x1, z1, x2, z1);
-
-                    // Рисуем первую линию от 2 к 3 точке
-                    _wrapper.DrawLineSeg(doc2D, x2, z1, x3, z3);
-
-                    // От 3 к 4
-                    _wrapper.DrawLineSeg(doc2D, x3, z3, x3, z4);
-
-                    // От 4 к 5
-                    _wrapper.DrawLineSeg(doc2D, x3, z4, x1, z4);
-
-                    // От 5 к 1
-                    //_wrapper.DrawLineSeg(doc2D, x1, z4, x1, z1);
-                    _wrapper.DrawAxisLine(doc2D, x1, z3, x1, z1); // Осевая линия для оси вращения
-
-                }
-                else
-                {
-                    // 1. Точка (начало координат, y везде = 0)
-                    double x1 = 0;
-                    double z1 = 0;
-
-                    // 2. Двигаемся по x на радиус, z2 = 0, поэтому используем z1
-                    double x2 = radius;
-
-                    // 3. x3 равнаяется 0, поэтому используем x1
-                    double z3 = totalLength;
-
-                    // 4. Точка, где x4 = radius, z4 = totalLength => x4 = x2, z4 = z3
-
-                    // Рисуем первую линию от 1 точки ко 2
-                    _wrapper.DrawLineSeg(doc2D, x1, z1, x2, z1);
-
-                    // Линия от 2 до 3 точки
-                    _wrapper.DrawLineSeg(doc2D, x2, z1, x2, z3);
-
-                    // Линия от 3 до 4 точки
-                    _wrapper.DrawLineSeg(doc2D, x2, z3, x1, z3); // Исправлено: была ошибка - точки совпадали
-
-                    // Линия от 4 до 1 точки
-                    //_wrapper.DrawLineSeg(doc2D, x1, z3, x1, z1); // Исправлено: была ошибка - точки совпадали
-                    _wrapper.DrawAxisLine(doc2D, x1, z3, x1, z1); // Осевая линия для оси вращения
-
-                    // Завершаем редактирование эскиза
-                    _wrapper.EndSketchEdit(sketch);
-
-                }
-
-                _wrapper.EndSketchEdit(sketch);
-                // Ось вращения
-                _wrapper.CreateRotation(sketch, (short)Direction_Type.dtReverse, false, 360);
-                ksEntity spiral = _wrapper.CreateDrillSpiral(workingLength, parameters.Diameter, totalLength);
-                ksEntity fluteProfile = _wrapper.CreateFluteProfile(totalLength, radius, 0.6);
-                ksEntity firstFlute = _wrapper.CreateHelicalFlute(fluteProfile, spiral);
-                _wrapper.CreateCircularCopy(2, firstFlute);
-                ksEntity conicSpiral = _wrapper.CreateConicSpiral(totalLength * 0.54, parameters.Diameter, tailLength);
-                ksEntity fluteProfile2 = _wrapper.CreateFluteProfile(tailLength, radius, 0.55);
-                ksEntity secondFlut = _wrapper.CreateHelicalFlute(fluteProfile2, conicSpiral);
-                _wrapper.CreateCircularCopy(2, secondFlut);
+                CreateMainDrillBody(parameters);
+                CreateSpiralFlutes(parameters);
+                CreateConicalFlutes(parameters);
+                CreateDrillPoint(parameters);
 
                 return true;
             }
@@ -171,60 +49,181 @@ namespace ORSAPR
         }
 
         /// <summary>
-        /// Сохраняет построенную 3D-модель сверла в файл.
+        /// Инициализирует подключение к КОМПАС-3D и создает документ.
         /// </summary>
-        /// <param name="parameters">Параметры сверла, используемые для формирования имени файла.</param>
-        /// <param name="folderPath">Путь к папке для сохранения файла.</param>
         /// <returns>
-        /// <c>true</c> - если файл успешно сохранен; 
-        /// <c>false</c> - в случае ошибки при сохранении.
+        /// <c>true</c> - если подключение успешно; 
+        /// <c>false</c> - в случае ошибки.
         /// </returns>
-        /// <remarks>
-        /// Метод выполняет следующие действия:
-        /// <list type="number">
-        /// <item><description>Проверяет существование указанной папки, создает ее при необходимости</description></item>
-        /// <item><description>Формирует имя файла на основе параметров сверла и текущей даты/времени</description></item>
-        /// <item><description>Сохраняет документ КОМПАС-3D по указанному пути через <see cref="Wrapper.SaveDocument"/></description></item>
-        /// </list>
-        /// Формат имени файла: Drill_[диаметр]x[общая длина]_Cone_[наличие конуса]_[значение конуса]_[дата_время].m3d
-        /// </remarks>
-        /// <example>
-        /// <code>
-        /// var parameters = new Parameters();
-        /// parameters.Diameter = 10;
-        /// parameters.TotalLength = 100;
-        /// parameters.ClearanceCone = true;
-        /// parameters.ConeValue = 0.5;
-        /// 
-        /// string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-        /// string folderPath = Path.Combine(desktopPath, "КОМПАС_Сверла");
-        /// 
-        /// bool saved = builder.SaveResult(parameters, folderPath);
-        /// if (saved)
-        /// {
-        ///     Console.WriteLine($"Файл сохранен в: {folderPath}");
-        /// }
-        /// </code>
-        /// </example>
-        public bool SaveResult(Parameters parameters, string folderPath)
+        private bool InitializeKompas()
         {
-            try
+            if (!_wrapper.ConnectCAD())
             {
-                if (!Directory.Exists(folderPath))
-                    Directory.CreateDirectory(folderPath);
-
-                string fileName = $"Drill_{parameters.Diameter}x{parameters.TotalLength}_" +
-                                 $"Cone_{parameters.ClearanceCone}_{parameters.ConeValue}_" +
-                                 $"{DateTime.Now:yyyyMMdd_HHmmss}.m3d";
-                string filePath = Path.Combine(folderPath, fileName);
-
-                return _wrapper.SaveDocument(filePath);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Ошибка при сохранении: {ex.Message}");
                 return false;
             }
+
+            if (!_wrapper.CreateDocument())
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Создает основное тело сверла.
+        /// </summary>
+        /// <param name="parameters">Параметры сверла.</param>
+        private void CreateMainDrillBody(Parameters parameters)
+        {
+            ksEntity sketch = _wrapper.CreateSketch((short)Obj3dType.o3d_planeXOZ);
+            ksDocument2D doc2D = _wrapper.BeginSketchEdit(sketch);
+
+            double diameter = parameters.Diameter;
+            double radius = diameter / 2;
+            double totalLength = parameters.TotalLength;
+            double workingLength = parameters.Length;
+            double tailLength = totalLength - workingLength;
+
+            if (parameters.ClearanceCone)
+            {
+                CreateProfileWithClearanceCone(doc2D, parameters, radius, totalLength, tailLength);
+            }
+            else
+            {
+                CreateProfileWithoutClearanceCone(doc2D, radius, totalLength);
+            }
+
+            _wrapper.EndSketchEdit(sketch);
+            _wrapper.CreateRotation(sketch, (short)Direction_Type.dtReverse, false, 360);
+        }
+
+        /// <summary>
+        /// Создает профиль сверла с обратным конусом.
+        /// </summary>
+        /// <param name="doc2D">2D-документ для рисования.</param>
+        /// <param name="parameters">Параметры сверла.</param>
+        /// <param name="radius">Радиус сверла.</param>
+        /// <param name="totalLength">Общая длина сверла.</param>
+        /// <param name="tailLength">Длина хвостовика.</param>
+        private void CreateProfileWithClearanceCone(ksDocument2D doc2D, Parameters parameters,
+            double radius, double totalLength, double tailLength)
+        {
+            double cone = parameters.ConeValue / 2;
+
+            double x1 = 0;
+            double z1 = 0;
+            double x2 = cone;
+            double x3 = radius;
+            double z3 = tailLength;
+            double z4 = totalLength;
+
+            _wrapper.DrawLineSeg(doc2D, x1, z1, x2, z1);
+            _wrapper.DrawLineSeg(doc2D, x2, z1, x3, z3);
+            _wrapper.DrawLineSeg(doc2D, x3, z3, x3, z4);
+            _wrapper.DrawLineSeg(doc2D, x3, z4, x1, z4);
+            _wrapper.DrawAxisLine(doc2D, x1, z3, x1, z1);
+        }
+
+        /// <summary>
+        /// Создает профиль сверла без обратного конуса.
+        /// </summary>
+        /// <param name="doc2D">2D-документ для рисования.</param>
+        /// <param name="radius">Радиус сверла.</param>
+        /// <param name="totalLength">Общая длина сверла.</param>
+        private void CreateProfileWithoutClearanceCone(ksDocument2D doc2D, double radius, double totalLength)
+        {
+            double x1 = 0;
+            double z1 = 0;
+            double x2 = radius;
+            double z3 = totalLength;
+
+            _wrapper.DrawLineSeg(doc2D, x1, z1, x2, z1);
+            _wrapper.DrawLineSeg(doc2D, x2, z1, x2, z3);
+            _wrapper.DrawLineSeg(doc2D, x2, z3, x1, z3);
+            _wrapper.DrawAxisLine(doc2D, x1, z3, x1, z1);
+        }
+
+        /// <summary>
+        /// Создает спиральные канавки на рабочей части сверла.
+        /// </summary>
+        /// <param name="parameters">Параметры сверла.</param>
+        private void CreateSpiralFlutes(Parameters parameters)
+        {
+            double diameter = parameters.Diameter;
+            double radius = diameter / 2;
+            double totalLength = parameters.TotalLength;
+            double workingLength = parameters.Length;
+
+            ksEntity spiral = _wrapper.CreateDrillSpiral(workingLength, diameter, totalLength);
+            ksEntity fluteProfile = _wrapper.CreateFluteProfile(totalLength, radius, 0.6);
+            ksEntity firstFlute = _wrapper.CreateHelicalFlute(fluteProfile, spiral);
+            _wrapper.CreateCircularCopy(2, firstFlute);
+        }
+
+        /// <summary>
+        /// Создает конические спиральные канавки на хвостовике.
+        /// </summary>
+        /// <param name="parameters">Параметры сверла.</param>
+        private void CreateConicalFlutes(Parameters parameters)
+        {
+            double diameter = parameters.Diameter;
+            double radius = diameter / 2;
+            double totalLength = parameters.TotalLength;
+            double workingLength = parameters.Length;
+            double tailLength = totalLength - workingLength;
+
+            ksEntity conicSpiral = _wrapper.CreateConicSpiral(totalLength * 0.54, diameter, tailLength);
+            ksEntity fluteProfile2 = _wrapper.CreateFluteProfile(tailLength, radius, 0.55);
+            ksEntity secondFlut = _wrapper.CreateHelicalFlute(fluteProfile2, conicSpiral);
+            _wrapper.CreateCircularCopy(2, secondFlut);
+        }
+
+        /// <summary>
+        /// Создает угол при вершине сверла.
+        /// </summary>
+        /// <param name="parameters">Параметры сверла.</param>
+        private void CreateDrillPoint(Parameters parameters)
+        {
+            double diameter = parameters.Diameter;
+            double radius = diameter / 2;
+            double totalLength = parameters.TotalLength;
+            double angleRad = parameters.Angle * (Math.PI / 180);
+
+            ksEntity sketchAngle = _wrapper.CreateSketch((short)Obj3dType.o3d_planeYOZ);
+            ksDocument2D doc2DAngle = _wrapper.BeginSketchEdit(sketchAngle);
+
+            DrawDrillPointProfile(doc2DAngle, radius, totalLength, angleRad);
+
+            _wrapper.EndSketchEdit(sketchAngle);
+
+            ksEntity cut = _wrapper.CutRotation(sketchAngle, (short)Direction_Type.dtNormal, true, 360);
+            _wrapper.CreateCircularCopy(2, cut);
+        }
+
+        /// <summary>
+        /// Рисует профиль угла при вершине сверла.
+        /// </summary>
+        /// <param name="doc2DAngle">2D-документ для рисования.</param>
+        /// <param name="radius">Радиус сверла.</param>
+        /// <param name="totalLength">Общая длина сверла.</param>
+        /// <param name="angleRad">Угол при вершине в радианах.</param>
+        private void DrawDrillPointProfile(ksDocument2D doc2DAngle, double radius, double totalLength, double angleRad)
+        {
+            double ya4 = 0;
+            double za4 = totalLength;
+            double ya1 = -radius * 2;
+            double za1 = za4 - (ya4 - ya1) / Math.Tan(angleRad);
+            double ya2 = ya1;
+            double za2 = za4 + 5;
+            double ya3 = radius * 2;
+            double za3 = za2;
+
+            _wrapper.DrawLineSeg(doc2DAngle, za1, ya1, za2, ya2);
+            _wrapper.DrawLineSeg(doc2DAngle, za2, ya2, za3, ya3);
+            _wrapper.DrawLineSeg(doc2DAngle, za3, ya3, za4, ya4);
+            _wrapper.DrawLineSeg(doc2DAngle, za4, ya4, za1, ya1);
+            _wrapper.DrawAxisLine(doc2DAngle, za1, ya1, za2, ya2);
         }
     }
 }
