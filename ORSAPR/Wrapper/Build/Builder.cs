@@ -4,6 +4,7 @@ using KompasAPI7;
 using System;
 using System.IO;
 using System.Security.Cryptography;
+using System.Xml.Linq;
 
 namespace ORSAPR
 {
@@ -18,12 +19,41 @@ namespace ORSAPR
         private Wrapper _wrapper = new Wrapper();
 
         /// <summary>
-        /// Выполняет построение 3D-модели сверла на основе заданных параметров.
+        /// Глубина канавки (60% от радиуса).
         /// </summary>
-        /// <param name="parameters">Параметры сверла для построения модели.</param>
+        private const double FluteDepthFactor = 0.6;
+
+        /// <summary>
+        /// Глубина канавки хвостовика.
+        /// </summary>
+        private const double TailFluteDepthFactor = 0.55;
+
+        /// <summary>
+        /// Размер отступа.
+        /// </summary>
+        private const double PointDeparture = 5.0;
+
+        /// <summary>
+        /// Размер отступа хвостовика.
+        /// </summary>
+        private const double ShankDeparture = 0.05;
+
+        private const double ShankBracingLength1 = 0.55;
+
+        private const double ShankBracingLength2 = 0.75;
+
+        private const double ShankBracingLength3 = 0.85;
+
+        /// <summary>
+        /// Выполняет построение 3D-модели сверла на основе заданных 
+        /// параметров.
+        /// </summary>
+        /// <param name="parameters">Параметры сверла для построения 
+        /// модели.</param>
         /// <returns>
         /// <c>true</c> - если модель успешно построена; 
-        /// <c>false</c> - в случае ошибки подключения к КОМПАС-3D или построения модели.
+        /// <c>false</c> - в случае ошибки подключения к КОМПАС-3D или 
+        /// построения модели.
         /// </returns>
         public bool Build(Parameters parameters)
         {
@@ -76,7 +106,8 @@ namespace ORSAPR
         /// <param name="parameters">Параметры сверла.</param>
         private void CreateMainDrillBody(Parameters parameters)
         {
-            ksEntity sketch = _wrapper.CreateSketch((short)Obj3dType.o3d_planeXOZ);
+            ksEntity sketch = _wrapper.CreateSketch(
+                (short)Obj3dType.o3d_planeXOZ);
             ksDocument2D doc2D = _wrapper.BeginSketchEdit(sketch);
 
             double diameter = parameters.Diameter;
@@ -87,7 +118,13 @@ namespace ORSAPR
 
             if (parameters.ClearanceCone)
             {
-                CreateProfileWithClearanceCone(doc2D, parameters, radius, totalLength, tailLength);
+                CreateProfileWithClearanceCone(doc2D, parameters, radius,
+                    totalLength, tailLength);
+            }
+            else if (parameters.ClearanceShank)
+            {
+                CreateProficeWithClearanceShank(doc2D, parameters, radius,
+                    totalLength, tailLength);
             }
             else
             {
@@ -95,7 +132,8 @@ namespace ORSAPR
             }
 
             _wrapper.EndSketchEdit(sketch);
-            _wrapper.CreateRotation(sketch, (short)Direction_Type.dtReverse, false, 360);
+            _wrapper.CreateRotation(sketch,
+                (short)Direction_Type.dtReverse, false, 360);
         }
 
         /// <summary>
@@ -106,8 +144,9 @@ namespace ORSAPR
         /// <param name="radius">Радиус сверла.</param>
         /// <param name="totalLength">Общая длина сверла.</param>
         /// <param name="tailLength">Длина хвостовика.</param>
-        private void CreateProfileWithClearanceCone(ksDocument2D doc2D, Parameters parameters,
-            double radius, double totalLength, double tailLength)
+        private void CreateProfileWithClearanceCone(ksDocument2D doc2D,
+            Parameters parameters, double radius, double totalLength,
+            double tailLength)
         {
             double cone = parameters.ConeValue / 2;
 
@@ -126,12 +165,44 @@ namespace ORSAPR
         }
 
         /// <summary>
+        /// Создает профиль сверла с хвостовиком.
+        /// </summary>
+        /// <param name="doc2D">2D-документ для рисования.</param>
+        /// <param name="parameters">Параметры сверла.</param>
+        /// <param name="radius">Радиус сверла.</param>
+        /// <param name="totalLength">Общая длина сверла.</param>
+        /// <param name="tailLength">Длина хвостовика.</param>
+        private void CreateProficeWithClearanceShank(ksDocument2D doc2D,
+            Parameters parameters, double radius, double totalLength,
+            double tailLength)
+        {
+            double shankDiameter = parameters.ShankDiameterValue / 2;
+            double shankLength = parameters.ShankLengthValue;
+
+            double x1 = 0;
+            double z1 = -shankLength;
+            double x2 = shankDiameter;
+            double z2 = -shankLength * ShankDeparture;
+            double x3 = radius;
+            double z3 = tailLength;
+            double z4 = totalLength;
+
+            _wrapper.DrawLineSeg(doc2D, x1, z1, x2, z1);
+            _wrapper.DrawLineSeg(doc2D, x2, z1, x2, z2);
+            _wrapper.DrawLineSeg(doc2D, x2, z2, x3, z3);
+            _wrapper.DrawLineSeg(doc2D, x3, z3, x3, z4);
+            _wrapper.DrawLineSeg(doc2D, x3, z4, x1, z4);
+            _wrapper.DrawAxisLine(doc2D, x1, z4, x1, z1);
+        }
+
+        /// <summary>
         /// Создает профиль сверла без обратного конуса.
         /// </summary>
         /// <param name="doc2D">2D-документ для рисования.</param>
         /// <param name="radius">Радиус сверла.</param>
         /// <param name="totalLength">Общая длина сверла.</param>
-        private void CreateProfileWithoutClearanceCone(ksDocument2D doc2D, double radius, double totalLength)
+        private void CreateProfileWithoutClearanceCone(ksDocument2D doc2D,
+            double radius, double totalLength)
         {
             double x1 = 0;
             double z1 = 0;
@@ -155,9 +226,12 @@ namespace ORSAPR
             double totalLength = parameters.TotalLength;
             double workingLength = parameters.Length;
 
-            ksEntity spiral = _wrapper.CreateDrillSpiral(workingLength, diameter, totalLength);
-            ksEntity fluteProfile = _wrapper.CreateFluteProfile(totalLength, radius, 0.6);
-            ksEntity firstFlute = _wrapper.CreateHelicalFlute(fluteProfile, spiral);
+            ksEntity spiral = _wrapper.CreateDrillSpiral(workingLength,
+                diameter, totalLength);
+            ksEntity fluteProfile = _wrapper.CreateFluteProfile(totalLength,
+                radius, FluteDepthFactor);
+            ksEntity firstFlute = _wrapper.CreateHelicalFlute(fluteProfile,
+                spiral);
             _wrapper.CreateCircularCopy(2, firstFlute);
         }
 
@@ -173,9 +247,12 @@ namespace ORSAPR
             double workingLength = parameters.Length;
             double tailLength = totalLength - workingLength;
 
-            ksEntity conicSpiral = _wrapper.CreateConicSpiral(totalLength * 0.54, diameter, tailLength);
-            ksEntity fluteProfile2 = _wrapper.CreateFluteProfile(tailLength, radius, 0.55);
-            ksEntity secondFlut = _wrapper.CreateHelicalFlute(fluteProfile2, conicSpiral);
+            ksEntity conicSpiral = _wrapper.CreateConicSpiral(
+                totalLength * TailFluteDepthFactor, diameter, tailLength);
+            ksEntity fluteProfile2 = _wrapper.CreateFluteProfile(tailLength,
+                radius, TailFluteDepthFactor);
+            ksEntity secondFlut = _wrapper.CreateHelicalFlute(fluteProfile2,
+                conicSpiral);
             _wrapper.CreateCircularCopy(2, secondFlut);
         }
 
@@ -186,18 +263,19 @@ namespace ORSAPR
         private void CreateDrillPoint(Parameters parameters)
         {
             double diameter = parameters.Diameter;
-            double radius = diameter / 2;
             double totalLength = parameters.TotalLength;
             double angleRad = parameters.Angle * (Math.PI / 180);
 
-            ksEntity sketchAngle = _wrapper.CreateSketch((short)Obj3dType.o3d_planeYOZ);
+            ksEntity sketchAngle = _wrapper.CreateSketch(
+                (short)Obj3dType.o3d_planeYOZ);
             ksDocument2D doc2DAngle = _wrapper.BeginSketchEdit(sketchAngle);
 
-            DrawDrillPointProfile(doc2DAngle, radius, totalLength, angleRad);
+            DrawDrillPointProfile(doc2DAngle, diameter, totalLength, angleRad);
 
             _wrapper.EndSketchEdit(sketchAngle);
 
-            ksEntity cut = _wrapper.CutRotation(sketchAngle, (short)Direction_Type.dtNormal, true, 360);
+            ksEntity cut = _wrapper.CutRotation(sketchAngle,
+                (short)Direction_Type.dtNormal, true, 360);
             _wrapper.CreateCircularCopy(2, cut);
         }
 
@@ -205,18 +283,19 @@ namespace ORSAPR
         /// Рисует профиль угла при вершине сверла.
         /// </summary>
         /// <param name="doc2DAngle">2D-документ для рисования.</param>
-        /// <param name="radius">Радиус сверла.</param>
+        /// <param name="diameter">Диаметр сверла.</param>
         /// <param name="totalLength">Общая длина сверла.</param>
         /// <param name="angleRad">Угол при вершине в радианах.</param>
-        private void DrawDrillPointProfile(ksDocument2D doc2DAngle, double radius, double totalLength, double angleRad)
+        private void DrawDrillPointProfile(ksDocument2D doc2DAngle,
+            double diameter, double totalLength, double angleRad)
         {
             double ya4 = 0;
             double za4 = totalLength;
-            double ya1 = -radius * 2;
+            double ya1 = -diameter;
             double za1 = za4 - (ya4 - ya1) / Math.Tan(angleRad);
             double ya2 = ya1;
-            double za2 = za4 + 5;
-            double ya3 = radius * 2;
+            double za2 = za4 + PointDeparture;
+            double ya3 = diameter;
             double za3 = za2;
 
             _wrapper.DrawLineSeg(doc2DAngle, za1, ya1, za2, ya2);
@@ -224,6 +303,19 @@ namespace ORSAPR
             _wrapper.DrawLineSeg(doc2DAngle, za3, ya3, za4, ya4);
             _wrapper.DrawLineSeg(doc2DAngle, za4, ya4, za1, ya1);
             _wrapper.DrawAxisLine(doc2DAngle, za1, ya1, za2, ya2);
+        }
+
+        /// <summary>
+        /// Создает упоры на хвостовике.
+        /// </summary>
+        /// <param name="parameters">Параметры сверла.</param>
+        private void CreateShankBracing(Parameters parameters)
+        {
+            double shankLength = parameters.ShankLengthValue;
+            double shankDiameter = parameters.ShankDiameterValue;
+
+            ksEntity shankBracing1 = _wrapper.CreateCircleGuide(
+                shankLength * ShankBracingLength1, shankDiameter);
         }
     }
 }

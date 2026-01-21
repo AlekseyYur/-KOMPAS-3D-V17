@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Security;
 
 namespace ORSAPR
 {
@@ -8,23 +9,110 @@ namespace ORSAPR
     /// </summary>
     public class Parameters
     {
+        /// <summary>
+        /// Угол при вершине (a).
+        /// </summary>
         private double _angle;
+
+        /// <summary>
+        /// Наличие обратного конуcа.
+        /// </summary>
         private bool _clearanceCone;
+
+        /// <summary>
+        /// Обратный конус.
+        /// </summary>
         private double _coneValue;
+
+        /// <summary>
+        /// Начилие хвостовика.
+        /// </summary>
+        private bool _clearanceShank;
+
+        /// <summary>
+        /// Хвостовик.
+        /// </summary>
+        private double _shankDiameterValue;
+
+        private double _shankLengthValue;
+
+        /// <summary>
+        /// Диаметр (d).
+        /// </summary>
         private double _diameter;
+
+        /// <summary>
+        /// Рабочая часть (l).
+        /// </summary>
         private double _length;
+
+        /// <summary>
+        /// Общая длина (L).
+        /// </summary>
         private double _totalLength;
 
+        /// <summary>
+        /// Минимальное доступное значение угла при вершине.
+        /// </summary>
         private const double _minAngle = 30;
+
+        /// <summary>
+        /// Максимальное доступное значение угла при вершине.
+        /// </summary>
         private const double _maxAngle = 60;
+
+        /// <summary>
+        /// Миинмальное доступное значение диаметра.
+        /// </summary>
         private const double _minDiameter = 1;
+
+        /// <summary>
+        /// Максимальное доступное значение диаметра.
+        /// </summary>
         private const double _maxDiameter = 20;
+
+        /// <summary>
+        /// Минимальное доступное значение рабочей части.
+        /// </summary>
         private double _minLength;
+
+        /// <summary>
+        /// Максимальное доступное значение рабочей части.
+        /// </summary>
         private double _maxLength;
+
+        /// <summary>
+        /// Минимальное досутпное значение общей длины.
+        /// </summary>
         private double _minTotalLength;
+
+        /// <summary>
+        /// Максимальное доступное значение общей длины.
+        /// </summary>
         private const double _maxTotalLength = 205;
+
+        /// <summary>
+        /// Минимальное доступное значение обратного конуса.
+        /// </summary>
         private double _minConeValue;
+
+        /// <summary>
+        /// Максимальное доступное значение обратного конуса.
+        /// </summary>
         private double _maxConeValue;
+
+        private double _minShankDiameterValue;
+
+        private double _maxShankDiameterValue;
+
+        private double _minShankLengthValue;
+
+        private double _maxShankLengthValue;
+
+        /// <summary>
+        /// Формат отображения чисел с одним десятичным знаком.
+        /// </summary>
+        private const string NumberFormat = "F1";
 
         /// <summary>
         /// Минимальная величина угла при вершине.
@@ -45,6 +133,26 @@ namespace ORSAPR
         /// Максимальная величина обратного конуса.
         /// </summary>
         public double MaxConeValue => _maxConeValue;
+
+        /// <summary>
+        /// Минимальный диаметр хвостовика.
+        /// </summary>
+        public double MinShankDiameterValue => _minShankDiameterValue;
+
+        /// <summary>
+        /// Максимальный диаметр хвостовика.
+        /// </summary>
+        public double MaxShankDiameterValue => _maxShankDiameterValue;
+
+        /// <summary>
+        /// Минимальная длина хвостовика.
+        /// </summary>
+        public double MinShankLengthValue => _minShankLengthValue;
+
+        /// <summary>
+        /// Максимальная длина хвостовика.
+        /// </summary>
+        public double MaxShankLengthValue => _maxShankLengthValue;
 
         /// <summary>
         /// Минимальная величина диаметра.
@@ -82,13 +190,7 @@ namespace ORSAPR
         public double Angle
         {
             get => _angle;
-            set
-            {
-                var error = ValidateAngle(value);
-                if (!string.IsNullOrEmpty(error))
-                    throw new ArgumentException(error);
-                _angle = value;
-            }
+            set => _angle = value;
         }
 
         /// <summary>
@@ -106,13 +208,34 @@ namespace ORSAPR
         public double ConeValue
         {
             get => _coneValue;
-            set
-            {
-                var error = ValidateConeValue(value);
-                if (!string.IsNullOrEmpty(error))
-                    throw new ArgumentException(error);
-                _coneValue = value;
-            }
+            set => _coneValue = value;
+        }
+
+        /// <summary>
+        /// Наличие хвостовика.
+        /// </summary>
+        public bool ClearanceShank
+        {
+            get => _clearanceShank;
+            set => _clearanceShank = value;
+        }
+
+        /// <summary>
+        /// Диаметр хвостовика.
+        /// </summary>
+        public double ShankDiameterValue
+        {
+            get => _shankDiameterValue;
+            set => _shankDiameterValue = value;
+        }
+
+        /// <summary>
+        /// Длина хвостовика.
+        /// </summary>
+        public double ShankLengthValue
+        {
+            get => _shankLengthValue;
+            set => _shankLengthValue = value;
         }
 
         /// <summary>
@@ -123,9 +246,6 @@ namespace ORSAPR
             get => _diameter;
             set
             {
-                var error = ValidateDiameter(value);
-                if (!string.IsNullOrEmpty(error))
-                    throw new ArgumentException(error);
                 _diameter = value;
                 CalculateDepended();
             }
@@ -139,9 +259,6 @@ namespace ORSAPR
             get => _length;
             set
             {
-                var error = ValidateWorkingLength(value);
-                if (!string.IsNullOrEmpty(error))
-                    throw new ArgumentException(error);
                 _length = value;
                 CalculateDepended();
             }
@@ -155,29 +272,38 @@ namespace ORSAPR
             get => _totalLength;
             set
             {
-                var error = ValidateTotalLength(value);
-                if (!string.IsNullOrEmpty(error))
-                    throw new ArgumentException(error);
                 _totalLength = value;
+                CalculateDepended();
             }
         }
 
         /// <summary>
-        /// Инициализирует новый экземпляр класса <see cref="Parameters"/> со значениями по умолчанию.
+        /// Инициализирует новый экземпляр класса <see cref="Parameters"/> 
+        /// со значениями по умолчанию.
         /// </summary>
         public Parameters()
         {
+            // Значения по умолчанию.
             _angle = 45.0;
             _diameter = 10.0;
             _clearanceCone = true;
+
+            // Средние значения зависимых параметров
             _coneValue = (_diameter * 0.25 + _diameter * 0.75) / 2;
             _length = (3 * _diameter + 8 * _diameter) / 2;
             _totalLength = Math.Min(_length + 20, 205);
+
+            _clearanceShank = false;
+            _shankDiameterValue = (_diameter * 1.25 + _diameter * 2) / 2;
+            _shankLengthValue = ((_totalLength - _length) * 2 +
+                (_totalLength - _length) * 3) / 2;
+
             CalculateDepended();
         }
 
         /// <summary>
-        /// Расчёт зависимых параметров на основе текущих значений диаметра и длины.
+        /// Расчёт зависимых параметров на основе текущих значений 
+        /// диаметра и длины.
         /// </summary>
         private void CalculateDepended()
         {
@@ -186,94 +312,68 @@ namespace ORSAPR
             _minTotalLength = _length + 20;
             _minConeValue = _diameter * 0.25;
             _maxConeValue = _diameter * 0.75;
+            _minShankDiameterValue = _diameter * 1.25;
+            _maxShankDiameterValue = _diameter * 2;
+            _minShankLengthValue = (_totalLength - _length) * 2;
+            _maxShankLengthValue = (_totalLength - _length) * 3;
         }
 
         /// <summary>
-        /// Выполняет валидацию угла при вершине сверла.
+        /// Валидирует бизнес-правила (зависимости между полями).
         /// </summary>
-        private string ValidateAngle(double value)
-        {
-            if (value < _minAngle || value > _maxAngle)
-                return $"Угол при вершине сверла должен быть в диапазоне {_minAngle}-{_maxAngle}";
-            return null;
-        }
-
-        /// <summary>
-        /// Выполняет валидацию значения обратного конуса.
-        /// </summary>
-        private string ValidateConeValue(double value)
-        {
-            if (value < _minConeValue || value > _maxConeValue)
-                return $"Значение обратного конуса должно быть в диапазоне {_minConeValue:F1}-{_maxConeValue:F1}";
-            return null;
-        }
-
-        /// <summary>
-        /// Выполняет валидацию диаметра сверла.
-        /// </summary>
-        private string ValidateDiameter(double value)
-        {
-            if (value < _minDiameter || value > _maxDiameter)
-                return $"Значение диаметра сверла должно быть в диапазоне {_minDiameter}-{_maxDiameter}";
-            return null;
-        }
-
-        /// <summary>
-        /// Выполняет валидацию длины рабочей части сверла.
-        /// </summary>
-        private string ValidateWorkingLength(double value)
-        {
-            if (value < _minLength || value > _maxLength)
-                return $"Значение длины рабочей части сверла должно быть в диапазоне {_minLength:F1}-{_maxLength:F1}";
-            return null;
-        }
-
-        /// <summary>
-        /// Выполняет валидацию общей длины сверла.
-        /// </summary>
-        private string ValidateTotalLength(double value)
-        {
-            if (value < _minTotalLength || value > _maxTotalLength)
-                return $"Значение длины сверла должно быть в диапазоне {_minTotalLength:F1}-{_maxTotalLength:F1}";
-            return null;
-        }
-
-        /// <summary>
-        /// Выполняет комплексную валидацию всех параметров сверла.
-        /// </summary>
-        public List<string> ValidateAndCalculate()
+        /// <returns>Список ошибок валидации правил.</returns>
+        public List<string> ValidateRules()
         {
             var errors = new List<string>();
 
-            try
+            //Проверка зависимости длины рабочей части от диаметра
+            if (_length < MinLength || _length > MaxLength)
             {
-                string error;
-
-                error = ValidateAngle(_angle);
-                if (error != null) errors.Add(error);
-
-                if (_clearanceCone)
-                {
-                    error = ValidateConeValue(_coneValue);
-                    if (error != null) errors.Add(error);
-                }
-
-                error = ValidateDiameter(_diameter);
-                if (error != null) errors.Add(error);
-
-                if (errors.Count == 0)
-                {
-                    error = ValidateWorkingLength(_length);
-                    if (error != null) errors.Add(error);
-
-                    error = ValidateTotalLength(_totalLength);
-                    if (error != null) errors.Add(error);
-                }
+                errors.Add($"Длина рабочей части должна быть в диапазоне " +
+                          $"{_minLength.ToString(NumberFormat)} - " +
+                          $"{_maxLength.ToString(NumberFormat)} мм (3×d - 8×d)");
             }
-            catch (Exception ex)
+
+            // Проверка общей длины
+            if (_totalLength < _minTotalLength ||
+                _totalLength > MaxTotalLength)
             {
-                errors.Add($"Ошибка при валидации: {ex.Message}");
+                errors.Add($"Общая длина должна быть в диапазоне " +
+                          $"{_minTotalLength.ToString(NumberFormat)} - " +
+                          $"{MaxTotalLength.ToString(NumberFormat)} мм " +
+                          $"(L+20 - 205)");
             }
+
+            // Проверка обратного конуса (если включен)
+            if (_clearanceCone && (_coneValue < _minConeValue ||
+                _coneValue > _maxConeValue))
+            {
+                errors.Add($"Значение обратного конуса должно быть в диапазоне " +
+                          $"{_minConeValue.ToString(NumberFormat)} - " +
+                          $"{_maxConeValue.ToString(NumberFormat)} мм " +
+                          $"(0.25×d - 0.75×d)");
+            }
+
+            // Проверка диаметра хвостовика (если включен)
+            if (_clearanceShank && (_shankDiameterValue < _minShankDiameterValue ||
+                _shankDiameterValue > _maxShankDiameterValue))
+            {
+                errors.Add($"Значение диаметра хвостовика должно быть в диапазоне " +
+                          $"{_minShankDiameterValue.ToString(NumberFormat)} - " +
+                          $"{_maxShankDiameterValue.ToString(NumberFormat)} мм " +
+                          $"(1.25×d - 2×d)");
+            }
+
+            // Проверка длины хвостовика (если включен)
+            if (_clearanceShank && (_shankLengthValue < _minShankLengthValue ||
+                _shankLengthValue > _maxShankLengthValue))
+            {
+                errors.Add($"Значение диаметра хвостовика должно быть в диапазоне " +
+                          $"{_minShankLengthValue.ToString(NumberFormat)} - " +
+                          $"{_maxShankLengthValue.ToString(NumberFormat)} мм " +
+                          $"(1.25×d - 2×d)");
+            }
+
             return errors;
         }
     }

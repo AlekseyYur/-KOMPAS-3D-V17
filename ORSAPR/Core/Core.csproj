@@ -44,6 +44,9 @@
   <ItemGroup>
     <Compile Include="Model\Parameters.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Validation\FieldValidationResult.cs" />
+    <Compile Include="Validation\ValidationField.cs" />
+    <Compile Include="Validation\ValidationResult.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

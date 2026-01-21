@@ -1,14 +1,16 @@
-﻿using System;
+﻿using Core.Model;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.IO;
 
 namespace ORSAPR
 {
@@ -27,22 +29,21 @@ namespace ORSAPR
         /// </summary>
         private Parameters _parameters;
 
+        private ValidationField _validator;
+
+        /// <summary>
+        /// Формат отображения чисел с одним десятичным знаком.
+        /// </summary>
+        private const string NumberFormat = "F1";
+
         /// <summary>
         /// Инициализирует новый экземпляр класса <see cref="MainForm"/>.
         /// </summary>
         public MainForm()
         {
             InitializeComponent();
-
-            txtDiameter.TextChanged += txtDiameter_TextChanged;
-            txtLength.TextChanged += txtLength_TextChanged;
-            txtTotalLength.TextChanged += txtTotalLength_TextChanged;
-            txtAngle.TextChanged += txtAngle_TextChanged;
-            txtConeValue.TextChanged += txtConeValue_TextChanged;
-            chkClearanceCone.CheckedChanged += chkClearanceCone_CheckedChanged;
-
             InitializeParameters();
-            UpdateRanges();
+            InitilizeEventHandlers();
         }
 
         /// <summary>
@@ -52,282 +53,104 @@ namespace ORSAPR
         {
             _parameters = new Parameters();
             _builder = new Builder();
+            _validator = new ValidationField(_parameters);
 
-            txtDiameter.Text = _parameters.Diameter.ToString("F1");
-            txtLength.Text = _parameters.Length.ToString("F1");
-            txtTotalLength.Text = _parameters.TotalLength.ToString("F1");
-            txtAngle.Text = _parameters.Angle.ToString("F1");
-            chkClearanceCone.Checked = _parameters.ClearanceCone;
-            txtConeValue.Text = _parameters.ConeValue.ToString("F1");
+            // Установка начальных значений из уже рассчитанных параметров
+            TextDiameter.Text = _parameters.Diameter.ToString(
+                NumberFormat, CultureInfo.CurrentCulture);
+            TextLength.Text = _parameters.Length.ToString(
+                NumberFormat, CultureInfo.CurrentCulture);
+            TextTotalLength.Text = _parameters.TotalLength.ToString(
+                NumberFormat, CultureInfo.CurrentCulture);
+            TextAngle.Text = _parameters.Angle.ToString(
+                NumberFormat, CultureInfo.CurrentCulture);
+            TextConeValue.Text = _parameters.ConeValue.ToString(
+                NumberFormat, CultureInfo.CurrentCulture);
+            CheckClearanceCone.Checked = _parameters.ClearanceCone;
+            TextShankDiameterValue.Text =
+                _parameters.ShankDiameterValue.ToString(
+                NumberFormat, CultureInfo.CurrentCulture);
+            TextShankLengthValue.Text =
+                _parameters.ShankLengthValue.ToString(
+                NumberFormat, CultureInfo.CurrentCulture);
+            CheckClearanceShank.Checked = _parameters.ClearanceShank;
 
-            UpdateConeValueVisibility();
-            ResetAllFieldColors();
+            UpdateVisibility();
+            UpdateRanges();
+            ResetFieldColors();
         }
 
         /// <summary>
-        /// Сбрасывает цвета фона всех полей ввода к значениям по умолчанию.
+        /// Инициализирует обработчики событий для элементов управления.
         /// </summary>
-        private void ResetAllFieldColors()
+        private void InitilizeEventHandlers()
         {
-            txtDiameter.BackColor = SystemColors.Window;
-            txtLength.BackColor = SystemColors.Window;
-            txtTotalLength.BackColor = SystemColors.Window;
-            txtAngle.BackColor = SystemColors.Window;
-            txtConeValue.BackColor = SystemColors.Window;
+            TextDiameter.TextChanged += TextBoxTextChanged;
+            TextLength.TextChanged += TextBoxTextChanged;
+            TextTotalLength.TextChanged += TextBoxTextChanged;
+            TextAngle.TextChanged += TextBoxTextChanged;
+            TextConeValue.TextChanged += TextBoxTextChanged;
+            CheckClearanceCone.CheckedChanged +=
+                CheckClearanceConeCheckedChanged;
+            TextShankDiameterValue.TextChanged += TextBoxTextChanged;
+            TextShankLengthValue.TextChanged += TextBoxTextChanged;
+            CheckClearanceShank.CheckedChanged +=
+                CheckClearanceShankCheckedChanged;
         }
 
         /// <summary>
-        /// Обновляет видимость элементов интерфейса, связанных с обратным конусом.
+        /// Обработчик изменения текста в текстовых полях.
         /// </summary>
-        private void UpdateConeValueVisibility()
+        /// <param name="sender">Источник события.</param>
+        /// <param name="e">Данные события.</param>
+        private void TextBoxTextChanged(object sender, EventArgs e)
         {
-            bool visible = chkClearanceCone.Checked;
-            txtConeValue.Visible = visible;
-            lblConeValueName.Visible = visible;
-            lblConeValueRange.Visible = visible;
-        }
-
-        /// <summary>
-        /// Выполняет валидацию поля ввода диаметра сверла.
-        /// </summary>
-        /// <returns>
-        /// <c>true</c> - если значение диаметра валидно; 
-        /// <c>false</c> - если значение невалидно или произошла ошибка при установке.
-        /// </returns>
-        private bool ValidateDiameterField()
-        {
-            if (string.IsNullOrWhiteSpace(txtDiameter.Text))
+            var textBox = sender as TextBox;
+            if (textBox == null)
             {
-                txtDiameter.BackColor = Color.LightPink;
-                return false;
-            }
-
-            if (double.TryParse(txtDiameter.Text, out double value))
-            {
-                if (value < _parameters.MinDiameter || value > _parameters.MaxDiameter)
-                {
-                    txtDiameter.BackColor = Color.LightPink;
-                    return false;
-                }
-
-                try
-                {
-                    _parameters.Diameter = value;
-                    txtDiameter.BackColor = SystemColors.Window;
-                    UpdateRanges();
-                    return true;
-                }
-                catch
-                {
-                    txtDiameter.BackColor = Color.LightPink;
-                    return false;
-                }
-            }
-            else
-            {
-                txtDiameter.BackColor = Color.LightPink;
-                return false;
-            }
-        }
-
-        /// <summary>
-        /// Выполняет валидацию поля ввода длины рабочей части сверла.
-        /// </summary>
-        /// <returns>
-        /// <c>true</c> - если значение длины валидно; 
-        /// <c>false</c> - если значение невалидно или произошла ошибка при установке.
-        /// </returns>
-        private bool ValidateLengthField()
-        {
-            if (string.IsNullOrWhiteSpace(txtLength.Text))
-            {
-                txtLength.BackColor = Color.LightPink;
-                return false;
-            }
-
-            if (double.TryParse(txtLength.Text, out double value))
-            {
-                if (value < _parameters.MinLength || value > _parameters.MaxLength)
-                {
-                    txtLength.BackColor = Color.LightPink;
-                    return false;
-                }
-                try
-                {
-                    _parameters.Length = value;
-                    txtLength.BackColor = SystemColors.Window;
-                    UpdateRanges();
-                    return true;
-                }
-                catch
-                {
-                    txtLength.BackColor = Color.LightPink;
-                    return false;
-                }
-            }
-            else
-            {
-                txtLength.BackColor = Color.LightPink;
-                return false;
-            }
-        }
-
-        /// <summary>
-        /// Выполняет валидацию поля ввода общей длины сверла.
-        /// </summary>
-        /// <returns>
-        /// <c>true</c> - если значение общей длины валидно; 
-        /// <c>false</c> - если значение невалидно или произошла ошибка при установке.
-        /// </returns>
-        private bool ValidateTotalLengthField()
-        {
-            if (string.IsNullOrWhiteSpace(txtTotalLength.Text))
-            {
-                txtTotalLength.BackColor = Color.LightPink;
-                return false;
-            }
-
-            if (double.TryParse(txtTotalLength.Text, out double value))
-            {
-                if (value < _parameters.MinTotalLength || value > _parameters.MaxTotalLength)
-                {
-                    txtTotalLength.BackColor = Color.LightPink;
-                    return false;
-                }
-                try
-                {
-                    _parameters.TotalLength = value;
-                    txtTotalLength.BackColor = SystemColors.Window;
-                    return true;
-                }
-                catch
-                {
-                    txtTotalLength.BackColor = Color.LightPink;
-                    return false;
-                }
-            }
-            else
-            {
-                txtTotalLength.BackColor = Color.LightPink;
-                return false;
-            }
-        }
-
-        /// <summary>
-        /// Выполняет валидацию поля ввода угла при вершине сверла.
-        /// </summary>
-        /// <returns>
-        /// <c>true</c> - если значение угла валидно; 
-        /// <c>false</c> - если значение невалидно или произошла ошибка при установке.
-        /// </returns>
-        private bool ValidateAngleField()
-        {
-            if (string.IsNullOrWhiteSpace(txtAngle.Text))
-            {
-                txtAngle.BackColor = Color.LightPink;
-                return false;
-            }
-
-            if (double.TryParse(txtAngle.Text, out double value))
-            {
-                if (value < _parameters.MinAngle || value > _parameters.MaxAngle)
-                {
-                    txtAngle.BackColor = Color.LightPink;
-                    return false;
-                }
-                try
-                {
-                    _parameters.Angle = value;
-                    txtAngle.BackColor = SystemColors.Window;
-                    return true;
-                }
-                catch
-                {
-                    txtAngle.BackColor = Color.LightPink;
-                    return false;
-                }
-            }
-            else
-            {
-                txtAngle.BackColor = Color.LightPink;
-                return false;
-            }
-        }
-
-        /// <summary>
-        /// Выполняет валидацию поля ввода значения обратного конуса.
-        /// </summary>
-        /// <returns>
-        /// <c>true</c> - если значение обратного конуса валидно или валидация не требуется; 
-        /// <c>false</c> - если значение невалидно или произошла ошибка при установке.
-        /// </returns>
-        private bool ValidateConeValueField()
-        {
-            if (!chkClearanceCone.Checked)
-            {
-                txtConeValue.BackColor = SystemColors.Window;
-                return true;
-            }
-
-            if (string.IsNullOrWhiteSpace(txtConeValue.Text))
-            {
-                txtConeValue.BackColor = Color.LightPink;
-                return false;
-            }
-
-            if (double.TryParse(txtConeValue.Text, out double value))
-            {
-                if (value < _parameters.MinConeValue || value > _parameters.MaxConeValue)
-                {
-                    txtConeValue.BackColor = Color.LightPink;
-                    return false;
-                }
-                try
-                {
-                    _parameters.ConeValue = value;
-                    txtConeValue.BackColor = SystemColors.Window;
-                    return true;
-                }
-                catch
-                {
-                    txtConeValue.BackColor = Color.LightPink;
-                    return false;
-                }
-            }
-            else
-            {
-                txtConeValue.BackColor = Color.LightPink;
-                return false;
-            }
-        }
-
-        /// <summary>
-        /// Выполняет построение 3D-модели сверла на основе введенных параметров.
-        /// </summary>
-        private void BuildModel()
-        {
-            if (!ValidateAllFields())
-            {
-                ShowErrorMessage("Исправьте ошибки в полях ввода");
                 return;
             }
 
-            UpdateParametersFromUI();
+            ValidationResult result = null;
 
-            var errors = _parameters.ValidateAndCalculate();
-
-            if (errors.Count > 0)
+            // Только валидация, без обновления параметров
+            if (textBox == TextDiameter)
             {
-                ShowErrorMessage(errors[0]);
-                return;
+                result = _validator.ValidateDiameter(textBox.Text);
+            }
+            else if (textBox == TextLength)
+            {
+                result = _validator.ValidateLength(textBox.Text);
+            }
+            else if (textBox == TextTotalLength)
+            {
+                result = _validator.ValidateTotalLength(textBox.Text);
+            }
+            else if (textBox == TextAngle)
+            {
+                result = _validator.ValidateAngle(textBox.Text);
+            }
+            else if (textBox == TextConeValue)
+            {
+                result = _validator.ValidateConeValue(
+                    textBox.Text, CheckClearanceCone.Checked);
+            }
+            else if (textBox == TextShankDiameterValue)
+            {
+                result = _validator.ValidateShankDiameterValue(
+                    textBox.Text, CheckClearanceShank.Checked);
+            }
+            else if (textBox == TextShankLengthValue)
+            {
+                result = _validator.ValidateShankLengthValue(
+                    textBox.Text, CheckClearanceShank.Checked);
             }
 
-            bool success = _builder.Build(_parameters);
-
-            if (success) { }
-            else
+            // Обновление UI
+            if (result != null)
             {
-                ShowErrorMessage("Не удалось построить сверло. Проверьте подключение к КОМПАС-3D.");
+                textBox.BackColor = result.IsValid ?
+                    SystemColors.Window : Color.LightPink;
             }
         }
 
@@ -336,78 +159,127 @@ namespace ORSAPR
         /// </summary>
         private void UpdateRanges()
         {
-            lblLengthRange.Text = $"{_parameters.MinLength:F1}-{_parameters.MaxLength:F1} мм";
-            lblTotalLengthRange.Text = $"{_parameters.MinTotalLength:F1}-{_parameters.MaxTotalLength} мм";
-            lblDiameterRange.Text = $"{_parameters.MinDiameter:F1}-{_parameters.MaxDiameter:F1} мм";
-            lblAngleRange.Text = $"{_parameters.MinAngle:F1}-{_parameters.MaxAngle:F1}°";
-            lblConeValueRange.Text = $"{_parameters.MinConeValue:F2}-{_parameters.MaxConeValue:F1} мм";
+            var culture = CultureInfo.CurrentCulture;
+
+            LabelLengthRange.Text =
+                $"{_parameters.MinLength.ToString(NumberFormat, culture)}-" +
+                $"{_parameters.MaxLength.ToString(NumberFormat, culture)} мм";
+            LabelTotalLengthRange.Text =
+                $"{_parameters.MinTotalLength.ToString(NumberFormat, culture)}-" +
+                $"{_parameters.MaxTotalLength.ToString(NumberFormat, culture)} мм";
+            LabelDiameterRange.Text =
+                $"{_parameters.MinDiameter.ToString(NumberFormat, culture)}-" +
+                $"{_parameters.MaxDiameter.ToString(NumberFormat, culture)} мм";
+            LabelAngleRange.Text =
+                $"{_parameters.MinAngle.ToString(NumberFormat, culture)}-" +
+                $"{_parameters.MaxAngle.ToString(NumberFormat, culture)}°";
+            LabelConeValueRange.Text =
+                $"{_parameters.MinConeValue.ToString(NumberFormat, culture)}-" +
+                $"{_parameters.MaxConeValue.ToString(NumberFormat, culture)} мм";
+            LabelShankDiameterValueRange.Text =
+                $"{_parameters.MinShankDiameterValue.ToString(NumberFormat, culture)}-" +
+                $"{_parameters.MaxShankDiameterValue.ToString(NumberFormat, culture)} мм";
+            LabelShankLengthValueRange.Text =
+                $"{_parameters.MinShankLengthValue.ToString(NumberFormat, culture)}-" +
+                $"{_parameters.MaxShankLengthValue.ToString(NumberFormat, culture)} мм";
         }
 
         /// <summary>
-        /// Обновляет параметры сверла на основе значений из интерфейса.
+        /// Сбрасывает цвета фона всех полей ввода к значениям по умолчанию.
         /// </summary>
-        /// <exception cref="ArgumentException">
-        /// Выбрасывается при некорректном формате числовых значений в полях ввода.
-        /// </exception>
-        private void UpdateParametersFromUI()
+        private void ResetFieldColors()
         {
-            try
-            {
-                double oldDiameter = _parameters.Diameter;
-                double oldLength = _parameters.Length;
-
-                if (!double.TryParse(txtDiameter.Text, out double diameter))
-                    throw new ArgumentException("Неверный формат диаметра");
-                _parameters.Diameter = diameter;
-
-                if (!double.TryParse(txtLength.Text, out double length))
-                    throw new ArgumentException("Неверный формат длины");
-                _parameters.Length = length;
-
-                if (!double.TryParse(txtTotalLength.Text, out double totalLength))
-                    throw new ArgumentException("Неверный формат общей длины");
-                _parameters.TotalLength = totalLength;
-
-                if (!double.TryParse(txtAngle.Text, out double angle))
-                    throw new ArgumentException("Неверный формат угла");
-                _parameters.Angle = angle;
-
-                _parameters.ClearanceCone = chkClearanceCone.Checked;
-
-                if (chkClearanceCone.Checked)
-                {
-                    if (!double.TryParse(txtConeValue.Text, out double coneValue))
-                        throw new ArgumentException("Неверный формат значения конуса");
-                    _parameters.ConeValue = coneValue;
-                }
-
-                if (oldDiameter != _parameters.Diameter || oldLength != _parameters.Length)
-                {
-                    UpdateRanges();
-                }
-            }
-            catch (Exception ex)
-            {
-                throw new ArgumentException($"Ошибка обновления параметров: {ex.Message}");
-            }
+            // Убираем цвет, установленный в конструкторе
+            TextDiameter.BackColor = SystemColors.Window;
+            TextLength.BackColor = SystemColors.Window;
+            TextTotalLength.BackColor = SystemColors.Window;
+            TextAngle.BackColor = SystemColors.Window;
+            TextConeValue.BackColor = SystemColors.Window;
+            TextShankDiameterValue.BackColor = SystemColors.Window;
+            TextShankLengthValue.BackColor = SystemColors.Window;
         }
 
         /// <summary>
-        /// Выполняет валидацию всех полей ввода на форме.
+        /// Обновляет видимость элементов интерфейса, связанных с 
+        /// обратным конусом.
         /// </summary>
-        /// <returns>
-        /// <c>true</c> - если все поля содержат валидные значения; 
-        /// <c>false</c> - если хотя бы одно поле содержит невалидное значение.
-        /// </returns>
-        private bool ValidateAllFields()
+        private void UpdateVisibility()
         {
-            bool diameterValid = ValidateDiameterField();
-            bool lengthValid = ValidateLengthField();
-            bool totalLengthValid = ValidateTotalLengthField();
-            bool angleValid = ValidateAngleField();
-            bool coneValueValid = ValidateConeValueField();
+            TextConeValue.Enabled = CheckClearanceCone.Checked;
+            TextShankDiameterValue.Enabled = CheckClearanceShank.Checked;
+            TextShankLengthValue.Enabled = CheckClearanceShank.Checked;
+        }
 
-            return diameterValid && lengthValid && totalLengthValid && angleValid && coneValueValid;
+        /// <summary>
+        /// Обработчик события изменения состояния чекбокса 
+        /// "Наличие обратного конуса".
+        /// </summary>
+        /// <param name="sender">Источник события.</param>
+        /// <param name="e">Данные события.</param>
+        private void CheckClearanceConeCheckedChanged(object sender, EventArgs e)
+        {
+            // Если включаем этот чекбокс, выключаем другой
+            if (CheckClearanceCone.Checked && CheckClearanceShank.Checked)
+            {
+                CheckClearanceShank.Checked = false;
+            }
+
+            UpdateVisibility();
+            TextBoxTextChanged(TextConeValue, EventArgs.Empty);
+        }
+
+        /// <summary>
+        /// Обработчик события изменения состояния чекбокса хвостовика.
+        /// </summary>
+        /// <param name="sender">Источник события.</param>
+        /// <param name="e">Данные события.</param>
+        private void CheckClearanceShankCheckedChanged(object sender, EventArgs e)
+        {
+            // Если включаем этот чекбокс, выключаем другой
+            if (CheckClearanceShank.Checked && CheckClearanceCone.Checked)
+            {
+                CheckClearanceCone.Checked = false;
+            }
+
+            UpdateVisibility();
+            TextBoxTextChanged(TextShankDiameterValue, EventArgs.Empty);
+            TextBoxTextChanged(TextShankLengthValue, EventArgs.Empty);
+        }
+
+        /// <summary>
+        /// Обработчик события нажатия кнопки "Построить модель".
+        /// </summary>
+        /// <param name="sender">Источник события.</param>
+        /// <param name="e">Данные события.</param>
+        private void ButtonBuildClick(object sender, EventArgs e)
+        {
+            // Используем TryUpdateParameters для валидации и обновления параметров
+            if (!_validator.TryUpdateParameters(TextDiameter.Text,
+                TextLength.Text, TextTotalLength.Text, TextAngle.Text,
+                TextConeValue.Text, CheckClearanceCone.Checked,
+                TextShankDiameterValue.Text, TextShankLengthValue.Text,
+                CheckClearanceShank.Checked,
+                out List<string> errors))
+            {
+                ShowErrorMessage(string.Join("\n", errors));
+                return;
+            }
+
+            // Проверяем бизнес-правила (зависимости между полями)
+            List<string> rulesErrors = _parameters.ValidateRules();
+            if (rulesErrors.Count > 0)
+            {
+                ShowErrorMessage(string.Join("\n", rulesErrors));
+                return;
+            }
+
+            // Все проверки пройдены - строим модель
+            bool success = _builder.Build(_parameters);
+            if (!success)
+            {
+                ShowErrorMessage("Не удалось построить модель. " +
+                    "Проверьте подключение к КОМПАС-3D");
+            }
         }
 
         /// <summary>
@@ -416,78 +288,8 @@ namespace ORSAPR
         /// <param name="message">Текст сообщения об ошибке.</param>
         private void ShowErrorMessage(string message)
         {
-            MessageBox.Show(message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-        }
-
-        /// <summary>
-        /// Обработчик события изменения текста в поле ввода диаметра.
-        /// </summary>
-        /// <param name="sender">Источник события.</param>
-        /// <param name="e">Данные события.</param>
-        private void txtDiameter_TextChanged(object sender, EventArgs e)
-        {
-            ValidateDiameterField();
-        }
-
-        /// <summary>
-        /// Обработчик события изменения текста в поле ввода длины рабочей части.
-        /// </summary>
-        /// <param name="sender">Источник события.</param>
-        /// <param name="e">Данные события.</param>
-        private void txtLength_TextChanged(object sender, EventArgs e)
-        {
-            ValidateLengthField();
-        }
-
-        /// <summary>
-        /// Обработчик события изменения текста в поле ввода общей длины.
-        /// </summary>
-        /// <param name="sender">Источник события.</param>
-        /// <param name="e">Данные события.</param>
-        private void txtTotalLength_TextChanged(object sender, EventArgs e)
-        {
-            ValidateTotalLengthField();
-        }
-
-        /// <summary>
-        /// Обработчик события изменения текста в поле ввода угла при вершине.
-        /// </summary>
-        /// <param name="sender">Источник события.</param>
-        /// <param name="e">Данные события.</param>
-        private void txtAngle_TextChanged(object sender, EventArgs e)
-        {
-            ValidateAngleField();
-        }
-
-        /// <summary>
-        /// Обработчик события изменения текста в поле ввода значения обратного конуса.
-        /// </summary>
-        /// <param name="sender">Источник события.</param>
-        /// <param name="e">Данные события.</param>
-        private void txtConeValue_TextChanged(object sender, EventArgs e)
-        {
-            ValidateConeValueField();
-        }
-
-        /// <summary>
-        /// Обработчик события изменения состояния чекбокса "Наличие обратного конуса".
-        /// </summary>
-        /// <param name="sender">Источник события.</param>
-        /// <param name="e">Данные события.</param>
-        private void chkClearanceCone_CheckedChanged(object sender, EventArgs e)
-        {
-            UpdateConeValueVisibility();
-            ValidateConeValueField();
-        }
-
-        /// <summary>
-        /// Обработчик события нажатия кнопки "Построить модель".
-        /// </summary>
-        /// <param name="sender">Источник события.</param>
-        /// <param name="e">Данные события.</param>
-        private void btnBuild_Click(object sender, EventArgs e)
-        {
-            BuildModel();
+            MessageBox.Show(message, "Ошибка",
+                MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
     }
 }

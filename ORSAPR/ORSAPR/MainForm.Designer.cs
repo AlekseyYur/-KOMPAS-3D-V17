@@ -28,229 +28,362 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.lblDiameterName = new System.Windows.Forms.Label();
-            this.lblLengthName = new System.Windows.Forms.Label();
-            this.lblTotalLengthName = new System.Windows.Forms.Label();
-            this.lblAngleName = new System.Windows.Forms.Label();
-            this.lblConeValueName = new System.Windows.Forms.Label();
-            this.txtDiameter = new System.Windows.Forms.TextBox();
-            this.txtLength = new System.Windows.Forms.TextBox();
-            this.txtTotalLength = new System.Windows.Forms.TextBox();
-            this.txtAngle = new System.Windows.Forms.TextBox();
-            this.lblDiameterRange = new System.Windows.Forms.Label();
-            this.lblLengthRange = new System.Windows.Forms.Label();
-            this.lblTotalLengthRange = new System.Windows.Forms.Label();
-            this.lblAngleRange = new System.Windows.Forms.Label();
-            this.btnBuild = new System.Windows.Forms.Button();
-            this.chkClearanceCone = new System.Windows.Forms.CheckBox();
-            this.lblConeValueRange = new System.Windows.Forms.Label();
-            this.txtConeValue = new System.Windows.Forms.TextBox();
+            this.LabelDiameterName = new System.Windows.Forms.Label();
+            this.LabelLengthName = new System.Windows.Forms.Label();
+            this.LabelTotalLengthName = new System.Windows.Forms.Label();
+            this.LabelAngleName = new System.Windows.Forms.Label();
+            this.LabelConeClearanceName = new System.Windows.Forms.Label();
+            this.TextDiameter = new System.Windows.Forms.TextBox();
+            this.TextLength = new System.Windows.Forms.TextBox();
+            this.TextTotalLength = new System.Windows.Forms.TextBox();
+            this.TextAngle = new System.Windows.Forms.TextBox();
+            this.LabelDiameterRange = new System.Windows.Forms.Label();
+            this.LabelLengthRange = new System.Windows.Forms.Label();
+            this.LabelTotalLengthRange = new System.Windows.Forms.Label();
+            this.LabelAngleRange = new System.Windows.Forms.Label();
+            this.ButtonBuild = new System.Windows.Forms.Button();
+            this.CheckClearanceCone = new System.Windows.Forms.CheckBox();
+            this.LabelConeValueRange = new System.Windows.Forms.Label();
+            this.TextConeValue = new System.Windows.Forms.TextBox();
+            this.LabelShankClearanceName = new System.Windows.Forms.Label();
+            this.CheckClearanceShank = new System.Windows.Forms.CheckBox();
+            this.LabelShankDiameterValueName = new System.Windows.Forms.Label();
+            this.TextShankLengthValue = new System.Windows.Forms.TextBox();
+            this.TextShankDiameterValue = new System.Windows.Forms.TextBox();
+            this.LabelShankLengthValueName = new System.Windows.Forms.Label();
+            this.LabelNessesaryName = new System.Windows.Forms.Label();
+            this.LabelOptionalName = new System.Windows.Forms.Label();
+            this.LabelConeValueName = new System.Windows.Forms.Label();
+            this.LabelShankDiameterValueRange = new System.Windows.Forms.Label();
+            this.LabelShankLengthValueRange = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
-            // lblDiameterName
+            // LabelDiameterName
             // 
-            this.lblDiameterName.AutoSize = true;
-            this.lblDiameterName.Font = new System.Drawing.Font("Arial Narrow", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.lblDiameterName.Location = new System.Drawing.Point(13, 16);
-            this.lblDiameterName.Name = "lblDiameterName";
-            this.lblDiameterName.Size = new System.Drawing.Size(88, 23);
-            this.lblDiameterName.TabIndex = 0;
-            this.lblDiameterName.Text = "Диаметр d";
+            this.LabelDiameterName.AutoSize = true;
+            this.LabelDiameterName.Font = new System.Drawing.Font("Arial Narrow", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.LabelDiameterName.Location = new System.Drawing.Point(19, 44);
+            this.LabelDiameterName.Name = "LabelDiameterName";
+            this.LabelDiameterName.Size = new System.Drawing.Size(88, 23);
+            this.LabelDiameterName.TabIndex = 0;
+            this.LabelDiameterName.Text = "Диаметр d";
             // 
-            // lblLengthName
+            // LabelLengthName
             // 
-            this.lblLengthName.AutoSize = true;
-            this.lblLengthName.Font = new System.Drawing.Font("Arial Narrow", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.lblLengthName.Location = new System.Drawing.Point(13, 51);
-            this.lblLengthName.Name = "lblLengthName";
-            this.lblLengthName.Size = new System.Drawing.Size(123, 23);
-            this.lblLengthName.TabIndex = 1;
-            this.lblLengthName.Text = "Рабочая часть l";
+            this.LabelLengthName.AutoSize = true;
+            this.LabelLengthName.Font = new System.Drawing.Font("Arial Narrow", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.LabelLengthName.Location = new System.Drawing.Point(19, 79);
+            this.LabelLengthName.Name = "LabelLengthName";
+            this.LabelLengthName.Size = new System.Drawing.Size(123, 23);
+            this.LabelLengthName.TabIndex = 1;
+            this.LabelLengthName.Text = "Рабочая часть l";
             // 
-            // lblTotalLengthName
+            // LabelTotalLengthName
             // 
-            this.lblTotalLengthName.AutoSize = true;
-            this.lblTotalLengthName.Font = new System.Drawing.Font("Arial Narrow", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.lblTotalLengthName.Location = new System.Drawing.Point(13, 83);
-            this.lblTotalLengthName.Name = "lblTotalLengthName";
-            this.lblTotalLengthName.Size = new System.Drawing.Size(123, 23);
-            this.lblTotalLengthName.TabIndex = 2;
-            this.lblTotalLengthName.Text = "Общая длина L";
+            this.LabelTotalLengthName.AutoSize = true;
+            this.LabelTotalLengthName.Font = new System.Drawing.Font("Arial Narrow", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.LabelTotalLengthName.Location = new System.Drawing.Point(19, 114);
+            this.LabelTotalLengthName.Name = "LabelTotalLengthName";
+            this.LabelTotalLengthName.Size = new System.Drawing.Size(123, 23);
+            this.LabelTotalLengthName.TabIndex = 2;
+            this.LabelTotalLengthName.Text = "Общая длина L";
             // 
-            // lblAngleName
+            // LabelAngleName
             // 
-            this.lblAngleName.AutoSize = true;
-            this.lblAngleName.Font = new System.Drawing.Font("Arial Narrow", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.lblAngleName.Location = new System.Drawing.Point(13, 121);
-            this.lblAngleName.Name = "lblAngleName";
-            this.lblAngleName.Size = new System.Drawing.Size(157, 23);
-            this.lblAngleName.TabIndex = 3;
-            this.lblAngleName.Text = "Угол при вершине a";
+            this.LabelAngleName.AutoSize = true;
+            this.LabelAngleName.Font = new System.Drawing.Font("Arial Narrow", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.LabelAngleName.Location = new System.Drawing.Point(19, 149);
+            this.LabelAngleName.Name = "LabelAngleName";
+            this.LabelAngleName.Size = new System.Drawing.Size(157, 23);
+            this.LabelAngleName.TabIndex = 3;
+            this.LabelAngleName.Text = "Угол при вершине a";
             // 
-            // lblConeValueName
+            // LabelConeClearanceName
             // 
-            this.lblConeValueName.AutoSize = true;
-            this.lblConeValueName.Font = new System.Drawing.Font("Arial Narrow", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.lblConeValueName.Location = new System.Drawing.Point(38, 159);
-            this.lblConeValueName.Name = "lblConeValueName";
-            this.lblConeValueName.Size = new System.Drawing.Size(130, 23);
-            this.lblConeValueName.TabIndex = 4;
-            this.lblConeValueName.Text = "Обратный конус";
+            this.LabelConeClearanceName.AutoSize = true;
+            this.LabelConeClearanceName.Font = new System.Drawing.Font("Arial Narrow", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.LabelConeClearanceName.Location = new System.Drawing.Point(44, 232);
+            this.LabelConeClearanceName.Name = "LabelConeClearanceName";
+            this.LabelConeClearanceName.Size = new System.Drawing.Size(130, 23);
+            this.LabelConeClearanceName.TabIndex = 4;
+            this.LabelConeClearanceName.Text = "Обратный конус";
             // 
-            // txtDiameter
+            // TextDiameter
             // 
-            this.txtDiameter.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
-            this.txtDiameter.Font = new System.Drawing.Font("Arial Narrow", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.txtDiameter.Location = new System.Drawing.Point(176, 13);
-            this.txtDiameter.Name = "txtDiameter";
-            this.txtDiameter.Size = new System.Drawing.Size(76, 29);
-            this.txtDiameter.TabIndex = 5;
-            this.txtDiameter.Text = "21";
-            this.txtDiameter.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-            this.txtDiameter.TextChanged += new System.EventHandler(this.txtDiameter_TextChanged);
+            this.TextDiameter.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
+            this.TextDiameter.Font = new System.Drawing.Font("Arial Narrow", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.TextDiameter.Location = new System.Drawing.Point(193, 41);
+            this.TextDiameter.Name = "TextDiameter";
+            this.TextDiameter.Size = new System.Drawing.Size(76, 29);
+            this.TextDiameter.TabIndex = 5;
+            this.TextDiameter.Text = "21";
+            this.TextDiameter.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.TextDiameter.TextChanged += new System.EventHandler(this.TextBoxTextChanged);
             // 
-            // txtLength
+            // TextLength
             // 
-            this.txtLength.Font = new System.Drawing.Font("Arial Narrow", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.txtLength.Location = new System.Drawing.Point(175, 48);
-            this.txtLength.Name = "txtLength";
-            this.txtLength.Size = new System.Drawing.Size(76, 29);
-            this.txtLength.TabIndex = 6;
-            this.txtLength.Text = "64";
-            this.txtLength.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-            this.txtLength.TextChanged += new System.EventHandler(this.txtLength_TextChanged);
+            this.TextLength.Font = new System.Drawing.Font("Arial Narrow", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.TextLength.Location = new System.Drawing.Point(193, 76);
+            this.TextLength.Name = "TextLength";
+            this.TextLength.Size = new System.Drawing.Size(76, 29);
+            this.TextLength.TabIndex = 6;
+            this.TextLength.Text = "64";
+            this.TextLength.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.TextLength.TextChanged += new System.EventHandler(this.TextBoxTextChanged);
             // 
-            // txtTotalLength
+            // TextTotalLength
             // 
-            this.txtTotalLength.Font = new System.Drawing.Font("Arial Narrow", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.txtTotalLength.Location = new System.Drawing.Point(176, 83);
-            this.txtTotalLength.Name = "txtTotalLength";
-            this.txtTotalLength.Size = new System.Drawing.Size(76, 29);
-            this.txtTotalLength.TabIndex = 7;
-            this.txtTotalLength.Text = "88";
-            this.txtTotalLength.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-            this.txtTotalLength.TextChanged += new System.EventHandler(this.txtTotalLength_TextChanged);
+            this.TextTotalLength.Font = new System.Drawing.Font("Arial Narrow", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.TextTotalLength.Location = new System.Drawing.Point(193, 111);
+            this.TextTotalLength.Name = "TextTotalLength";
+            this.TextTotalLength.Size = new System.Drawing.Size(76, 29);
+            this.TextTotalLength.TabIndex = 7;
+            this.TextTotalLength.Text = "88";
+            this.TextTotalLength.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.TextTotalLength.TextChanged += new System.EventHandler(this.TextBoxTextChanged);
             // 
-            // txtAngle
+            // TextAngle
             // 
-            this.txtAngle.Font = new System.Drawing.Font("Arial Narrow", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.txtAngle.Location = new System.Drawing.Point(176, 118);
-            this.txtAngle.Name = "txtAngle";
-            this.txtAngle.Size = new System.Drawing.Size(76, 29);
-            this.txtAngle.TabIndex = 8;
-            this.txtAngle.Text = "97";
-            this.txtAngle.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-            this.txtAngle.TextChanged += new System.EventHandler(this.txtAngle_TextChanged);
+            this.TextAngle.Font = new System.Drawing.Font("Arial Narrow", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.TextAngle.Location = new System.Drawing.Point(193, 146);
+            this.TextAngle.Name = "TextAngle";
+            this.TextAngle.Size = new System.Drawing.Size(76, 29);
+            this.TextAngle.TabIndex = 8;
+            this.TextAngle.Text = "97";
+            this.TextAngle.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.TextAngle.TextChanged += new System.EventHandler(this.TextBoxTextChanged);
             // 
-            // lblDiameterRange
+            // LabelDiameterRange
             // 
-            this.lblDiameterRange.AutoSize = true;
-            this.lblDiameterRange.Font = new System.Drawing.Font("Arial Narrow", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.lblDiameterRange.Location = new System.Drawing.Point(257, 16);
-            this.lblDiameterRange.Name = "lblDiameterRange";
-            this.lblDiameterRange.Size = new System.Drawing.Size(87, 23);
-            this.lblDiameterRange.TabIndex = 10;
-            this.lblDiameterRange.Text = "1 — 20 мм";
+            this.LabelDiameterRange.AutoSize = true;
+            this.LabelDiameterRange.Font = new System.Drawing.Font("Arial Narrow", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.LabelDiameterRange.Location = new System.Drawing.Point(297, 44);
+            this.LabelDiameterRange.Name = "LabelDiameterRange";
+            this.LabelDiameterRange.Size = new System.Drawing.Size(87, 23);
+            this.LabelDiameterRange.TabIndex = 10;
+            this.LabelDiameterRange.Text = "1 — 20 мм";
             // 
-            // lblLengthRange
+            // LabelLengthRange
             // 
-            this.lblLengthRange.AutoSize = true;
-            this.lblLengthRange.Font = new System.Drawing.Font("Arial Narrow", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.lblLengthRange.Location = new System.Drawing.Point(257, 51);
-            this.lblLengthRange.Name = "lblLengthRange";
-            this.lblLengthRange.Size = new System.Drawing.Size(130, 23);
-            this.lblLengthRange.TabIndex = 11;
-            this.lblLengthRange.Text = "3 × d — 8 × d мм";
+            this.LabelLengthRange.AutoSize = true;
+            this.LabelLengthRange.Font = new System.Drawing.Font("Arial Narrow", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.LabelLengthRange.Location = new System.Drawing.Point(297, 79);
+            this.LabelLengthRange.Name = "LabelLengthRange";
+            this.LabelLengthRange.Size = new System.Drawing.Size(130, 23);
+            this.LabelLengthRange.TabIndex = 11;
+            this.LabelLengthRange.Text = "3 × d — 8 × d мм";
             // 
-            // lblTotalLengthRange
+            // LabelTotalLengthRange
             // 
-            this.lblTotalLengthRange.AutoSize = true;
-            this.lblTotalLengthRange.Font = new System.Drawing.Font("Arial Narrow", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.lblTotalLengthRange.Location = new System.Drawing.Point(257, 86);
-            this.lblTotalLengthRange.Name = "lblTotalLengthRange";
-            this.lblTotalLengthRange.Size = new System.Drawing.Size(125, 23);
-            this.lblTotalLengthRange.TabIndex = 12;
-            this.lblTotalLengthRange.Text = "l + 20 — 205 мм";
+            this.LabelTotalLengthRange.AutoSize = true;
+            this.LabelTotalLengthRange.Font = new System.Drawing.Font("Arial Narrow", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.LabelTotalLengthRange.Location = new System.Drawing.Point(297, 114);
+            this.LabelTotalLengthRange.Name = "LabelTotalLengthRange";
+            this.LabelTotalLengthRange.Size = new System.Drawing.Size(125, 23);
+            this.LabelTotalLengthRange.TabIndex = 12;
+            this.LabelTotalLengthRange.Text = "l + 20 — 205 мм";
             // 
-            // lblAngleRange
+            // LabelAngleRange
             // 
-            this.lblAngleRange.AutoSize = true;
-            this.lblAngleRange.Font = new System.Drawing.Font("Arial Narrow", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.lblAngleRange.Location = new System.Drawing.Point(258, 121);
-            this.lblAngleRange.Name = "lblAngleRange";
-            this.lblAngleRange.Size = new System.Drawing.Size(87, 23);
-            this.lblAngleRange.TabIndex = 13;
-            this.lblAngleRange.Text = "90 — 140°";
+            this.LabelAngleRange.AutoSize = true;
+            this.LabelAngleRange.Font = new System.Drawing.Font("Arial Narrow", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.LabelAngleRange.Location = new System.Drawing.Point(297, 149);
+            this.LabelAngleRange.Name = "LabelAngleRange";
+            this.LabelAngleRange.Size = new System.Drawing.Size(87, 23);
+            this.LabelAngleRange.TabIndex = 13;
+            this.LabelAngleRange.Text = "90 — 140°";
             // 
-            // btnBuild
+            // ButtonBuild
             // 
-            this.btnBuild.Font = new System.Drawing.Font("Arial Narrow", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.btnBuild.Location = new System.Drawing.Point(174, 200);
-            this.btnBuild.Name = "btnBuild";
-            this.btnBuild.Size = new System.Drawing.Size(77, 31);
-            this.btnBuild.TabIndex = 15;
-            this.btnBuild.Text = "Построить";
-            this.btnBuild.UseVisualStyleBackColor = true;
-            this.btnBuild.Click += new System.EventHandler(this.btnBuild_Click);
+            this.ButtonBuild.Font = new System.Drawing.Font("Arial Narrow", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.ButtonBuild.Location = new System.Drawing.Point(193, 378);
+            this.ButtonBuild.Name = "ButtonBuild";
+            this.ButtonBuild.Size = new System.Drawing.Size(76, 31);
+            this.ButtonBuild.TabIndex = 15;
+            this.ButtonBuild.Text = "Построить";
+            this.ButtonBuild.UseVisualStyleBackColor = true;
+            this.ButtonBuild.Click += new System.EventHandler(this.ButtonBuildClick);
             // 
-            // chkClearanceCone
+            // CheckClearanceCone
             // 
-            this.chkClearanceCone.AutoSize = true;
-            this.chkClearanceCone.Checked = true;
-            this.chkClearanceCone.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.chkClearanceCone.Location = new System.Drawing.Point(17, 165);
-            this.chkClearanceCone.Name = "chkClearanceCone";
-            this.chkClearanceCone.Size = new System.Drawing.Size(15, 14);
-            this.chkClearanceCone.TabIndex = 17;
-            this.chkClearanceCone.UseVisualStyleBackColor = true;
-            this.chkClearanceCone.CheckedChanged += new System.EventHandler(this.chkClearanceCone_CheckedChanged);
+            this.CheckClearanceCone.AutoSize = true;
+            this.CheckClearanceCone.Checked = true;
+            this.CheckClearanceCone.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.CheckClearanceCone.Location = new System.Drawing.Point(23, 240);
+            this.CheckClearanceCone.Name = "CheckClearanceCone";
+            this.CheckClearanceCone.Size = new System.Drawing.Size(15, 14);
+            this.CheckClearanceCone.TabIndex = 17;
+            this.CheckClearanceCone.UseVisualStyleBackColor = true;
+            this.CheckClearanceCone.CheckedChanged += new System.EventHandler(this.CheckClearanceConeCheckedChanged);
             // 
-            // lblConeValueRange
+            // LabelConeValueRange
             // 
-            this.lblConeValueRange.AutoSize = true;
-            this.lblConeValueRange.Font = new System.Drawing.Font("Arial Narrow", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.lblConeValueRange.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.lblConeValueRange.Location = new System.Drawing.Point(257, 156);
-            this.lblConeValueRange.Name = "lblConeValueRange";
-            this.lblConeValueRange.Size = new System.Drawing.Size(109, 23);
-            this.lblConeValueRange.TabIndex = 14;
-            this.lblConeValueRange.Text = "0,05 — 10 мм";
+            this.LabelConeValueRange.AutoSize = true;
+            this.LabelConeValueRange.Font = new System.Drawing.Font("Arial Narrow", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.LabelConeValueRange.ForeColor = System.Drawing.SystemColors.ControlText;
+            this.LabelConeValueRange.Location = new System.Drawing.Point(297, 266);
+            this.LabelConeValueRange.Name = "LabelConeValueRange";
+            this.LabelConeValueRange.Size = new System.Drawing.Size(109, 23);
+            this.LabelConeValueRange.TabIndex = 14;
+            this.LabelConeValueRange.Text = "0,05 — 10 мм";
             // 
-            // txtConeValue
+            // TextConeValue
             // 
-            this.txtConeValue.Font = new System.Drawing.Font("Arial Narrow", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.txtConeValue.Location = new System.Drawing.Point(175, 156);
-            this.txtConeValue.Name = "txtConeValue";
-            this.txtConeValue.Size = new System.Drawing.Size(76, 29);
-            this.txtConeValue.TabIndex = 9;
-            this.txtConeValue.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-            this.txtConeValue.Visible = false;
-            this.txtConeValue.TextChanged += new System.EventHandler(this.txtConeValue_TextChanged);
+            this.TextConeValue.Font = new System.Drawing.Font("Arial Narrow", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.TextConeValue.Location = new System.Drawing.Point(193, 263);
+            this.TextConeValue.Name = "TextConeValue";
+            this.TextConeValue.Size = new System.Drawing.Size(76, 29);
+            this.TextConeValue.TabIndex = 9;
+            this.TextConeValue.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.TextConeValue.TextChanged += new System.EventHandler(this.TextBoxTextChanged);
+            // 
+            // LabelShankClearanceName
+            // 
+            this.LabelShankClearanceName.AutoSize = true;
+            this.LabelShankClearanceName.Font = new System.Drawing.Font("Arial Narrow", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.LabelShankClearanceName.Location = new System.Drawing.Point(201, 232);
+            this.LabelShankClearanceName.Name = "LabelShankClearanceName";
+            this.LabelShankClearanceName.Size = new System.Drawing.Size(85, 23);
+            this.LabelShankClearanceName.TabIndex = 19;
+            this.LabelShankClearanceName.Text = "Хвостовик";
+            // 
+            // CheckClearanceShank
+            // 
+            this.CheckClearanceShank.AutoSize = true;
+            this.CheckClearanceShank.Location = new System.Drawing.Point(180, 240);
+            this.CheckClearanceShank.Name = "CheckClearanceShank";
+            this.CheckClearanceShank.Size = new System.Drawing.Size(15, 14);
+            this.CheckClearanceShank.TabIndex = 20;
+            this.CheckClearanceShank.UseVisualStyleBackColor = true;
+            // 
+            // LabelShankDiameterValueName
+            // 
+            this.LabelShankDiameterValueName.AutoSize = true;
+            this.LabelShankDiameterValueName.Font = new System.Drawing.Font("Arial Narrow", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.LabelShankDiameterValueName.Location = new System.Drawing.Point(19, 301);
+            this.LabelShankDiameterValueName.Name = "LabelShankDiameterValueName";
+            this.LabelShankDiameterValueName.Size = new System.Drawing.Size(161, 23);
+            this.LabelShankDiameterValueName.TabIndex = 21;
+            this.LabelShankDiameterValueName.Text = "Диаметр хвостовика";
+            // 
+            // TextShankLengthValue
+            // 
+            this.TextShankLengthValue.Font = new System.Drawing.Font("Arial Narrow", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.TextShankLengthValue.Location = new System.Drawing.Point(193, 333);
+            this.TextShankLengthValue.Name = "TextShankLengthValue";
+            this.TextShankLengthValue.Size = new System.Drawing.Size(76, 29);
+            this.TextShankLengthValue.TabIndex = 22;
+            this.TextShankLengthValue.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            // 
+            // TextShankDiameterValue
+            // 
+            this.TextShankDiameterValue.Font = new System.Drawing.Font("Arial Narrow", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.TextShankDiameterValue.Location = new System.Drawing.Point(193, 298);
+            this.TextShankDiameterValue.Name = "TextShankDiameterValue";
+            this.TextShankDiameterValue.Size = new System.Drawing.Size(76, 29);
+            this.TextShankDiameterValue.TabIndex = 23;
+            this.TextShankDiameterValue.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            // 
+            // LabelShankLengthValueName
+            // 
+            this.LabelShankLengthValueName.AutoSize = true;
+            this.LabelShankLengthValueName.Font = new System.Drawing.Font("Arial Narrow", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.LabelShankLengthValueName.Location = new System.Drawing.Point(19, 336);
+            this.LabelShankLengthValueName.Name = "LabelShankLengthValueName";
+            this.LabelShankLengthValueName.Size = new System.Drawing.Size(143, 23);
+            this.LabelShankLengthValueName.TabIndex = 24;
+            this.LabelShankLengthValueName.Text = "Длина хвостовика";
+            // 
+            // LabelNessesaryName
+            // 
+            this.LabelNessesaryName.AutoSize = true;
+            this.LabelNessesaryName.Font = new System.Drawing.Font("Arial Narrow", 18F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.LabelNessesaryName.Location = new System.Drawing.Point(12, 9);
+            this.LabelNessesaryName.Name = "LabelNessesaryName";
+            this.LabelNessesaryName.Size = new System.Drawing.Size(257, 29);
+            this.LabelNessesaryName.TabIndex = 25;
+            this.LabelNessesaryName.Text = "Обязательные параметры";
+            // 
+            // LabelOptionalName
+            // 
+            this.LabelOptionalName.AutoSize = true;
+            this.LabelOptionalName.Font = new System.Drawing.Font("Arial Narrow", 18F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.LabelOptionalName.Location = new System.Drawing.Point(12, 202);
+            this.LabelOptionalName.Name = "LabelOptionalName";
+            this.LabelOptionalName.Size = new System.Drawing.Size(278, 29);
+            this.LabelOptionalName.TabIndex = 26;
+            this.LabelOptionalName.Text = "Необязательные параметры";
+            // 
+            // LabelConeValueName
+            // 
+            this.LabelConeValueName.AutoSize = true;
+            this.LabelConeValueName.Font = new System.Drawing.Font("Arial Narrow", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.LabelConeValueName.Location = new System.Drawing.Point(19, 266);
+            this.LabelConeValueName.Name = "LabelConeValueName";
+            this.LabelConeValueName.Size = new System.Drawing.Size(130, 23);
+            this.LabelConeValueName.TabIndex = 27;
+            this.LabelConeValueName.Text = "Обратный конус";
+            // 
+            // LabelShankDiameterValueRange
+            // 
+            this.LabelShankDiameterValueRange.AutoSize = true;
+            this.LabelShankDiameterValueRange.Font = new System.Drawing.Font("Arial Narrow", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.LabelShankDiameterValueRange.ForeColor = System.Drawing.SystemColors.ControlText;
+            this.LabelShankDiameterValueRange.Location = new System.Drawing.Point(297, 301);
+            this.LabelShankDiameterValueRange.Name = "LabelShankDiameterValueRange";
+            this.LabelShankDiameterValueRange.Size = new System.Drawing.Size(109, 23);
+            this.LabelShankDiameterValueRange.TabIndex = 28;
+            this.LabelShankDiameterValueRange.Text = "0,05 — 10 мм";
+            // 
+            // LabelShankLengthValueRange
+            // 
+            this.LabelShankLengthValueRange.AutoSize = true;
+            this.LabelShankLengthValueRange.Font = new System.Drawing.Font("Arial Narrow", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.LabelShankLengthValueRange.ForeColor = System.Drawing.SystemColors.ControlText;
+            this.LabelShankLengthValueRange.Location = new System.Drawing.Point(297, 336);
+            this.LabelShankLengthValueRange.Name = "LabelShankLengthValueRange";
+            this.LabelShankLengthValueRange.Size = new System.Drawing.Size(109, 23);
+            this.LabelShankLengthValueRange.TabIndex = 29;
+            this.LabelShankLengthValueRange.Text = "0,05 — 10 мм";
             // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(415, 243);
-            this.Controls.Add(this.chkClearanceCone);
-            this.Controls.Add(this.lblConeValueRange);
-            this.Controls.Add(this.btnBuild);
-            this.Controls.Add(this.lblAngleRange);
-            this.Controls.Add(this.lblTotalLengthRange);
-            this.Controls.Add(this.lblLengthRange);
-            this.Controls.Add(this.lblDiameterRange);
-            this.Controls.Add(this.txtConeValue);
-            this.Controls.Add(this.txtAngle);
-            this.Controls.Add(this.txtTotalLength);
-            this.Controls.Add(this.txtLength);
-            this.Controls.Add(this.txtDiameter);
-            this.Controls.Add(this.lblConeValueName);
-            this.Controls.Add(this.lblAngleName);
-            this.Controls.Add(this.lblTotalLengthName);
-            this.Controls.Add(this.lblLengthName);
-            this.Controls.Add(this.lblDiameterName);
+            this.ClientSize = new System.Drawing.Size(447, 421);
+            this.Controls.Add(this.LabelShankLengthValueRange);
+            this.Controls.Add(this.LabelShankDiameterValueRange);
+            this.Controls.Add(this.LabelConeValueName);
+            this.Controls.Add(this.LabelOptionalName);
+            this.Controls.Add(this.LabelNessesaryName);
+            this.Controls.Add(this.LabelShankLengthValueName);
+            this.Controls.Add(this.TextShankDiameterValue);
+            this.Controls.Add(this.TextShankLengthValue);
+            this.Controls.Add(this.LabelShankDiameterValueName);
+            this.Controls.Add(this.CheckClearanceShank);
+            this.Controls.Add(this.LabelShankClearanceName);
+            this.Controls.Add(this.CheckClearanceCone);
+            this.Controls.Add(this.LabelConeValueRange);
+            this.Controls.Add(this.ButtonBuild);
+            this.Controls.Add(this.LabelAngleRange);
+            this.Controls.Add(this.LabelTotalLengthRange);
+            this.Controls.Add(this.LabelLengthRange);
+            this.Controls.Add(this.LabelDiameterRange);
+            this.Controls.Add(this.TextConeValue);
+            this.Controls.Add(this.TextAngle);
+            this.Controls.Add(this.TextTotalLength);
+            this.Controls.Add(this.TextLength);
+            this.Controls.Add(this.TextDiameter);
+            this.Controls.Add(this.LabelConeClearanceName);
+            this.Controls.Add(this.LabelAngleName);
+            this.Controls.Add(this.LabelTotalLengthName);
+            this.Controls.Add(this.LabelLengthName);
+            this.Controls.Add(this.LabelDiameterName);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+            this.MaximizeBox = false;
+            this.MinimizeBox = false;
             this.Name = "MainForm";
+            this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
             this.Text = "Плагин для создания модели сверла";
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -259,23 +392,34 @@
 
         #endregion
 
-        private System.Windows.Forms.Label lblDiameterName;
-        private System.Windows.Forms.Label lblLengthName;
-        private System.Windows.Forms.Label lblTotalLengthName;
-        private System.Windows.Forms.Label lblAngleName;
-        private System.Windows.Forms.Label lblConeValueName;
-        private System.Windows.Forms.TextBox txtDiameter;
-        private System.Windows.Forms.TextBox txtLength;
-        private System.Windows.Forms.TextBox txtTotalLength;
-        private System.Windows.Forms.TextBox txtAngle;
-        private System.Windows.Forms.Label lblDiameterRange;
-        private System.Windows.Forms.Label lblLengthRange;
-        private System.Windows.Forms.Label lblTotalLengthRange;
-        private System.Windows.Forms.Label lblAngleRange;
-        private System.Windows.Forms.Button btnBuild;
-        private System.Windows.Forms.CheckBox chkClearanceCone;
-        private System.Windows.Forms.Label lblConeValueRange;
-        private System.Windows.Forms.TextBox txtConeValue;
+        private System.Windows.Forms.Label LabelDiameterName;
+        private System.Windows.Forms.Label LabelLengthName;
+        private System.Windows.Forms.Label LabelTotalLengthName;
+        private System.Windows.Forms.Label LabelAngleName;
+        private System.Windows.Forms.Label LabelConeClearanceName;
+        private System.Windows.Forms.TextBox TextDiameter;
+        private System.Windows.Forms.TextBox TextLength;
+        private System.Windows.Forms.TextBox TextTotalLength;
+        private System.Windows.Forms.TextBox TextAngle;
+        private System.Windows.Forms.Label LabelDiameterRange;
+        private System.Windows.Forms.Label LabelLengthRange;
+        private System.Windows.Forms.Label LabelTotalLengthRange;
+        private System.Windows.Forms.Label LabelAngleRange;
+        private System.Windows.Forms.Button ButtonBuild;
+        private System.Windows.Forms.CheckBox CheckClearanceCone;
+        private System.Windows.Forms.Label LabelConeValueRange;
+        private System.Windows.Forms.TextBox TextConeValue;
+        private System.Windows.Forms.Label LabelShankClearanceName;
+        private System.Windows.Forms.CheckBox CheckClearanceShank;
+        private System.Windows.Forms.Label LabelShankDiameterValueName;
+        private System.Windows.Forms.TextBox TextShankLengthValue;
+        private System.Windows.Forms.TextBox TextShankDiameterValue;
+        private System.Windows.Forms.Label LabelShankLengthValueName;
+        private System.Windows.Forms.Label LabelNessesaryName;
+        private System.Windows.Forms.Label LabelOptionalName;
+        private System.Windows.Forms.Label LabelConeValueName;
+        private System.Windows.Forms.Label LabelShankDiameterValueRange;
+        private System.Windows.Forms.Label LabelShankLengthValueRange;
     }
 }
 
