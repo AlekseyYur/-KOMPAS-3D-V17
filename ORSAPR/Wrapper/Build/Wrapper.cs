@@ -31,6 +31,7 @@ namespace ORSAPR
         /// </summary>
         private const double ConicSpiralDiamFactor = 6.5;
 
+        //TODO: XML
         private const double ShankDepth = 0.15;
 
         /// <summary>
@@ -173,6 +174,7 @@ namespace ORSAPR
             }
             catch
             {
+                //TODO: ??
                 return null;
             }
         }
@@ -188,6 +190,8 @@ namespace ORSAPR
                 var sketchDefinition = (ksSketchDefinition)sketch.GetDefinition();
                 sketchDefinition.EndEdit();
             }
+            //TODO: ??
+
             catch { }
         }
 
@@ -206,6 +210,8 @@ namespace ORSAPR
             {
                 doc2D.ksLineSeg(x1, y1, x2, y2, 1);
             }
+            //TODO: ??
+
             catch { }
         }
 
@@ -224,6 +230,8 @@ namespace ORSAPR
             {
                 doc2D.ksLineSeg(x1, y1, x2, y2, 3);
             }
+            //TODO: ??
+
             catch { }
         }
 
@@ -287,10 +295,12 @@ namespace ORSAPR
         {
             ksEntity spiralEntity = _part.NewEntity(
                 (short)Obj3dType.o3d_cylindricSpiral);
+            //TODO: {}
             if (spiralEntity == null) return null;
 
             ksCylindricSpiralDefinition spiralDef =
                 spiralEntity.GetDefinition();
+            //TODO: {}
             if (spiralDef == null) return null;
 
             spiralDef.buildMode = 2;

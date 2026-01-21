@@ -101,12 +101,16 @@ namespace ORSAPR
         /// </summary>
         private double _maxConeValue;
 
+        //TODO: XML
         private double _minShankDiameterValue;
 
+        //TODO: XML
         private double _maxShankDiameterValue;
 
+        //TODO: XML
         private double _minShankLengthValue;
 
+        //TODO: XML
         private double _maxShankLengthValue;
 
         /// <summary>
@@ -289,6 +293,7 @@ namespace ORSAPR
             _clearanceCone = true;
 
             // Средние значения зависимых параметров
+            //TODO: to const
             _coneValue = (_diameter * 0.25 + _diameter * 0.75) / 2;
             _length = (3 * _diameter + 8 * _diameter) / 2;
             _totalLength = Math.Min(_length + 20, 205);
@@ -307,6 +312,7 @@ namespace ORSAPR
         /// </summary>
         private void CalculateDepended()
         {
+            //TODO: to const
             _minLength = 3 * _diameter;
             _maxLength = 8 * _diameter;
             _minTotalLength = _length + 20;
@@ -331,6 +337,7 @@ namespace ORSAPR
             {
                 errors.Add($"Длина рабочей части должна быть в диапазоне " +
                           $"{_minLength.ToString(NumberFormat)} - " +
+                          //TODO: to const
                           $"{_maxLength.ToString(NumberFormat)} мм (3×d - 8×d)");
             }
 

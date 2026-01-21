@@ -24,6 +24,7 @@ namespace Core.Model
         /// </summary>
         private Parameters _parameters;
 
+        //TODO: XML
         private const string NumberFormat = "F1";
 
         /// <summary>
@@ -354,6 +355,7 @@ namespace Core.Model
             bool allValid = true;
 
             // Валидируем и обновляем каждое поле
+            //TODO: duplication
             var diameterResult = ValidateDiameter(diameter);
             if (diameterResult.IsValid)
             {
@@ -365,6 +367,7 @@ namespace Core.Model
                 allValid = false;
             }
 
+            //TODO: duplication
             var lengthResult = ValidateLength(length);
             if (lengthResult.IsValid)
             {
@@ -376,6 +379,7 @@ namespace Core.Model
                 allValid = false;
             }
 
+            //TODO: duplication
             var totalLengthResult = ValidateTotalLength(totalLength);
             if (totalLengthResult.IsValid)
             {
@@ -387,6 +391,7 @@ namespace Core.Model
                 allValid = false;
             }
 
+            //TODO: duplication
             var angleResult = ValidateAngle(angle);
             if (angleResult.IsValid)
             {
@@ -399,6 +404,7 @@ namespace Core.Model
             }
 
             _parameters.ClearanceCone = coneEnabled;
+            //TODO: duplication
             var coneResult = ValidateConeValue(coneValue, coneEnabled);
             if (coneResult.IsValid)
             {
@@ -411,6 +417,7 @@ namespace Core.Model
             }
 
             _parameters.ClearanceShank = shankEnabled;
+            //TODO: duplication
             var shankDiameterResult = ValidateShankDiameterValue(
                 shankDiameterValue, shankEnabled);
             if (shankDiameterResult.IsValid)
@@ -424,6 +431,7 @@ namespace Core.Model
             }
             var shankLengthResult = ValidateShankLengthValue(
                 shankLengthValue, shankEnabled);
+            //TODO: duplication
             if (shankLengthResult.IsValid)
             {
                 _parameters.ShankLengthValue = shankLengthResult.Value;

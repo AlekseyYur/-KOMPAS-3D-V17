@@ -29,6 +29,7 @@ namespace ORSAPR
         /// </summary>
         private Parameters _parameters;
 
+        //TODO: XML
         private ValidationField _validator;
 
         /// <summary>
@@ -113,6 +114,7 @@ namespace ORSAPR
 
             ValidationResult result = null;
 
+            //TODO: refactor
             // Только валидация, без обновления параметров
             if (textBox == TextDiameter)
             {

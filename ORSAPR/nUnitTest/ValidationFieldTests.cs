@@ -8,9 +8,12 @@ namespace nUnitTest
     [TestFixture]
     public class ValidationFieldTests
     {
+        //TODO: XML
         private Parameters _parameters;
+        //TODO: XML
         private ValidationField _validationField;
 
+        //TODO: refactor
         [SetUp]
         public void Setup()
         {
@@ -18,6 +21,7 @@ namespace nUnitTest
             _validationField = new ValidationField(_parameters);
         }
 
+        //TODO: XML
         private string FormatNumber(double value)
         {
             return value.ToString(CultureInfo.CurrentCulture);

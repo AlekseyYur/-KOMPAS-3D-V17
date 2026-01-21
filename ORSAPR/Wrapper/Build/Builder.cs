@@ -38,10 +38,13 @@ namespace ORSAPR
         /// </summary>
         private const double ShankDeparture = 0.05;
 
+        //TODO: XML
         private const double ShankBracingLength1 = 0.55;
 
+        //TODO: XML
         private const double ShankBracingLength2 = 0.75;
 
+        //TODO: XML
         private const double ShankBracingLength3 = 0.85;
 
         /// <summary>
@@ -305,6 +308,7 @@ namespace ORSAPR
             _wrapper.DrawAxisLine(doc2DAngle, za1, ya1, za2, ya2);
         }
 
+        //TODO: remove
         /// <summary>
         /// Создает упоры на хвостовике.
         /// </summary>
