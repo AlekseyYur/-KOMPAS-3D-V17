@@ -29,7 +29,9 @@ namespace ORSAPR
         /// </summary>
         private Parameters _parameters;
 
-        //TODO: XML
+        /// <summary>
+        /// Объект класса ValidationField.
+        /// </summary>
         private ValidationField _validator;
 
         /// <summary>
@@ -38,12 +40,18 @@ namespace ORSAPR
         private const string NumberFormat = "F1";
 
         /// <summary>
+        /// Словарь для сопоставления текстовых полей с функциями валидации.
+        /// </summary>
+        private Dictionary<TextBox, Func<ValidationResult>> _validationMap;
+
+        /// <summary>
         /// Инициализирует новый экземпляр класса <see cref="MainForm"/>.
         /// </summary>
         public MainForm()
         {
             InitializeComponent();
             InitializeParameters();
+            InitializeValidationMap();
             InitilizeEventHandlers();
         }
 
@@ -82,6 +90,50 @@ namespace ORSAPR
         }
 
         /// <summary>
+        /// Инициализирует словарь для сопоставления текстовых полей 
+        /// с функциями валидации.
+        /// </summary>
+        private void InitializeValidationMap()
+        {
+            _validationMap = new Dictionary<TextBox, Func<ValidationResult>>
+            {
+                {
+                    TextDiameter,
+                    () => _validator.ValidateDiameter(TextDiameter.Text)
+                },
+                {
+                    TextLength,
+                    () => _validator.ValidateLength(TextLength.Text)
+                },
+                {
+                    TextTotalLength,
+                    () => _validator.ValidateTotalLength(TextTotalLength.Text)
+                },
+                {
+                    TextAngle,
+                    () => _validator.ValidateAngle(TextAngle.Text)
+                },
+                {
+                    TextConeValue,
+                    () => _validator.ValidateConeValue(
+                        TextConeValue.Text, CheckClearanceCone.Checked)
+                },
+                {
+                    TextShankDiameterValue,
+                    () => _validator.ValidateShankDiameterValue(
+                        TextShankDiameterValue.Text,
+                        CheckClearanceShank.Checked)
+                },
+                {
+                    TextShankLengthValue,
+                    () => _validator.ValidateShankLengthValue(
+                        TextShankLengthValue.Text,
+                        CheckClearanceShank.Checked)
+                }
+            };
+        }
+
+        /// <summary>
         /// Инициализирует обработчики событий для элементов управления.
         /// </summary>
         private void InitilizeEventHandlers()
@@ -106,54 +158,54 @@ namespace ORSAPR
         /// <param name="e">Данные события.</param>
         private void TextBoxTextChanged(object sender, EventArgs e)
         {
+            // TODO: refactor +
             var textBox = sender as TextBox;
-            if (textBox == null)
+            if (textBox == null || _validationMap == null) return;
+
+            if (_validationMap.TryGetValue(textBox, out var validateFunc))
             {
-                return;
+                ValidationResult result = validateFunc();
+                UpdateTextBoxAppearance(textBox, result);
+
+                // Обновляем ключевые параметры, влияющие на диапазоны
+                UpdateKeyParametersFromUI();
             }
 
-            ValidationResult result = null;
+            UpdateRanges();
+        }
 
-            //TODO: refactor
-            // Только валидация, без обновления параметров
-            if (textBox == TextDiameter)
+        /// <summary>
+        /// Обновляет ключевые параметры из UI.
+        /// </summary>
+        private void UpdateKeyParametersFromUI()
+        {
+            // Обновляем только параметры, влияющие на диапазоны
+            if (double.TryParse(TextDiameter.Text, out double diameter))
             {
-                result = _validator.ValidateDiameter(textBox.Text);
-            }
-            else if (textBox == TextLength)
-            {
-                result = _validator.ValidateLength(textBox.Text);
-            }
-            else if (textBox == TextTotalLength)
-            {
-                result = _validator.ValidateTotalLength(textBox.Text);
-            }
-            else if (textBox == TextAngle)
-            {
-                result = _validator.ValidateAngle(textBox.Text);
-            }
-            else if (textBox == TextConeValue)
-            {
-                result = _validator.ValidateConeValue(
-                    textBox.Text, CheckClearanceCone.Checked);
-            }
-            else if (textBox == TextShankDiameterValue)
-            {
-                result = _validator.ValidateShankDiameterValue(
-                    textBox.Text, CheckClearanceShank.Checked);
-            }
-            else if (textBox == TextShankLengthValue)
-            {
-                result = _validator.ValidateShankLengthValue(
-                    textBox.Text, CheckClearanceShank.Checked);
+                _parameters.Diameter = diameter;
             }
 
-            // Обновление UI
-            if (result != null)
+            if (double.TryParse(TextLength.Text, out double length))
             {
-                textBox.BackColor = result.IsValid ?
-                    SystemColors.Window : Color.LightPink;
+                _parameters.Length = length;
             }
+
+            if (double.TryParse(TextTotalLength.Text, out double totalLength))
+            {
+                _parameters.TotalLength = totalLength;
+            }
+        }
+
+        /// <summary>
+        /// Обновляет внешний вид текстового поля на основе результата валидации.
+        /// </summary>
+        /// <param name="textBox">Текстовое поле для обновления.</param>
+        /// <param name="result">Результат валидации.</param>
+        private void UpdateTextBoxAppearance(TextBox textBox,
+            ValidationResult result)
+        {
+            textBox.BackColor = result.IsValid ?
+                SystemColors.Window : Color.LightPink;
         }
 
         /// <summary>
@@ -203,7 +255,7 @@ namespace ORSAPR
 
         /// <summary>
         /// Обновляет видимость элементов интерфейса, связанных с 
-        /// обратным конусом.
+        /// обратным конусом и хвостовиком.
         /// </summary>
         private void UpdateVisibility()
         {
@@ -227,7 +279,16 @@ namespace ORSAPR
             }
 
             UpdateVisibility();
-            TextBoxTextChanged(TextConeValue, EventArgs.Empty);
+
+            // Обновляем параметры
+            _parameters.ClearanceCone = CheckClearanceCone.Checked;
+
+            // Перевалидируем поле обратного конуса при изменении чекбокса
+            if (_validationMap != null &&
+                _validationMap.ContainsKey(TextConeValue))
+            {
+                TextBoxTextChanged(TextConeValue, EventArgs.Empty);
+            }
         }
 
         /// <summary>
@@ -244,8 +305,23 @@ namespace ORSAPR
             }
 
             UpdateVisibility();
-            TextBoxTextChanged(TextShankDiameterValue, EventArgs.Empty);
-            TextBoxTextChanged(TextShankLengthValue, EventArgs.Empty);
+
+            // Обновляем параметры
+            _parameters.ClearanceShank = CheckClearanceShank.Checked;
+
+            // Перевалидируем поля хвостовика при изменении чекбокса
+            if (_validationMap != null)
+            {
+                if (_validationMap.ContainsKey(TextShankDiameterValue))
+                {
+                    TextBoxTextChanged(TextShankDiameterValue, EventArgs.Empty);
+                }
+
+                if (_validationMap.ContainsKey(TextShankLengthValue))
+                {
+                    TextBoxTextChanged(TextShankLengthValue, EventArgs.Empty);
+                }
+            }
         }
 
         /// <summary>

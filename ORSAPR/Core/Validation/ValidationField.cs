@@ -24,7 +24,10 @@ namespace Core.Model
         /// </summary>
         private Parameters _parameters;
 
-        //TODO: XML
+        //TODO: XML +
+        /// <summary>
+        /// Формат отображения чисел с одним десятичным знаком.
+        /// </summary>
         private const string NumberFormat = "F1";
 
         /// <summary>
@@ -47,56 +50,9 @@ namespace Core.Model
         /// <param name="requaride">Обязательность заполнения.</param>
         /// <returns>Результат валидации.</returns>
         public ValidationResult ValidateField(string input, string fieldName,
-            double min, double max, string unit, bool requaride = true)
+            double min, double max, string unit, bool required = true)
         {
-            //Проверка на пустое поле
-            if (string.IsNullOrEmpty(input))
-            {
-                if (requaride == true)
-                {
-                    return ValidationResult.Error(
-                        $"{fieldName} не может быть пустым");
-                }
-                else
-                {
-                    return ValidationResult.Success(0);
-                }
-            }
-
-            //Попытка парсинга
-            if (!double.TryParse(input, NumberStyles.Any,
-                CultureInfo.CurrentCulture, out double value))
-            {
-                return ValidationResult.Error(
-                    $"Неверный формат числа в поле '{fieldName}'");
-            }
-
-            //Проверка диапазона
-            if (value < min || value > max)
-            {
-                return ValidationResult.Error(
-                    $"{fieldName} должен быть в диапазоне " +
-                    $"{min.ToString(NumberFormat)}-" +
-                    $"{max.ToString(NumberFormat)} {unit}");
-            }
-
-            return ValidationResult.Success(value);
-        }
-
-        /// <summary>
-        /// Валидирует зависимое поле ввода.
-        /// </summary>
-        /// <param name="input">Введенное значение.</param>
-        /// <param name="fieldName">Название поля.</param>
-        /// <param name="min">Минимальное допустимое значение.</param>
-        /// <param name="max">Максимальное допустимое значение.</param>
-        /// <param name="unit">Единица измерения.</param>
-        /// <param name="required">Обязательность заполнения.</param>
-        /// <returns>Результат валидации.</returns>
-        public ValidationResult ValidateDependentField(string input,
-            string fieldName, double min, double max, string unit,
-            bool required = true)
-        {
+            // Проверка на пустое поле
             if (string.IsNullOrEmpty(input))
             {
                 if (required)
@@ -110,6 +66,7 @@ namespace Core.Model
                 }
             }
 
+            // Попытка парсинга
             if (!double.TryParse(input, NumberStyles.Any,
                 CultureInfo.CurrentCulture, out double value))
             {
@@ -117,6 +74,7 @@ namespace Core.Model
                     $"Неверный формат числа в поле '{fieldName}'");
             }
 
+            // Проверка диапазона
             if (value < min || value > max)
             {
                 return ValidationResult.Error(
@@ -146,7 +104,7 @@ namespace Core.Model
         /// <returns>Результат валидации.</returns>
         public ValidationResult ValidateLength(string input)
         {
-            return ValidateDependentField(input, "Длина рабочей части",
+            return ValidateField(input, "Длина рабочей части",
                 _parameters.MinLength, _parameters.MaxLength, "мм");
         }
 
@@ -157,7 +115,7 @@ namespace Core.Model
         /// <returns>Результат валидации.</returns>
         public ValidationResult ValidateTotalLength(string input)
         {
-            return ValidateDependentField(input, "Общая длина",
+            return ValidateField(input, "Общая длина",
                 _parameters.MinTotalLength, _parameters.MaxTotalLength, "мм");
         }
 
@@ -186,7 +144,7 @@ namespace Core.Model
                 return ValidationResult.Success(0);
             }
 
-            return ValidateDependentField(input, "Обратный конус",
+            return ValidateField(input, "Обратный конус",
                 _parameters.MinConeValue, _parameters.MaxConeValue, "мм");
         }
 
@@ -204,7 +162,7 @@ namespace Core.Model
                 return ValidationResult.Success(0);
             }
 
-            return ValidateDependentField(input, "Диаметр хвостовика",
+            return ValidateField(input, "Диаметр хвостовика",
                 _parameters.MinShankDiameterValue,
                 _parameters.MaxShankDiameterValue, "мм");
         }
@@ -223,7 +181,7 @@ namespace Core.Model
                 return ValidationResult.Success(0);
             }
 
-            return ValidateDependentField(input, "Длина хвостовика",
+            return ValidateField(input, "Длина хвостовика",
                 _parameters.MinShankLengthValue,
                 _parameters.MaxShankLengthValue, "мм");
         }
@@ -260,9 +218,11 @@ namespace Core.Model
                 new FieldValidationResult("Обратный конус",
                     ValidateConeValue(coneValue, coneEnabled)),
                 new FieldValidationResult("Диаметр хвостовика",
-                    ValidateConeValue(shankDiameterValue, shankEnabled)),
+                    ValidateShankDiameterValue
+                    (shankDiameterValue, shankEnabled)),
                 new FieldValidationResult("Длина хвостовика",
-                    ValidateConeValue(shankLengthValue, shankEnabled)),
+                    ValidateShankLengthValue
+                    (shankLengthValue, shankEnabled)),
             };
 
             return results;
@@ -332,6 +292,39 @@ namespace Core.Model
         }
 
         /// <summary>
+        /// Унифицированный метод валидации и обновления параметра.
+        /// </summary>
+        /// <param name="input">Входное значение.</param>
+        /// <param name="validationFunc">Функция валидации.</param>
+        /// <param name="updateAction">Действие для обновления
+        /// параметра.</param>
+        /// <param name="errors">Список ошибок.</param>
+        /// <param name="isEnabled">Флаг активности параметра
+        /// (для опциональных полей).</param>
+        /// <returns>True, если параметр успешно обновлён.</returns>
+        private bool ValidateAndUpdate<T>(
+            string input,
+            Func<string, ValidationResult> validationFunc,
+            Action<T> updateAction,
+            List<string> errors,
+            bool isEnabled = true)
+        {
+            var validationResult = validationFunc(input);
+
+            if (validationResult.IsValid)
+            {
+                updateAction((T)Convert.ChangeType
+                    (validationResult.Value, typeof(T)));
+                return true;
+            }
+            else
+            {
+                errors.Add(validationResult.ErrorMessage);
+                return false;
+            }
+        }
+
+        /// <summary>
         /// Пытается обновить параметры на основе введенных значений.
         /// </summary>
         /// <param name="diameter">Диаметр сверла.</param>
@@ -355,92 +348,40 @@ namespace Core.Model
             bool allValid = true;
 
             // Валидируем и обновляем каждое поле
-            //TODO: duplication
-            var diameterResult = ValidateDiameter(diameter);
-            if (diameterResult.IsValid)
-            {
-                _parameters.Diameter = diameterResult.Value;
-            }
-            else
-            {
-                errors.Add(diameterResult.ErrorMessage);
-                allValid = false;
-            }
+            //TODO: duplication +
+            allValid &= ValidateAndUpdate<double>(diameter, ValidateDiameter,
+                x => _parameters.Diameter = x, errors);
 
-            //TODO: duplication
-            var lengthResult = ValidateLength(length);
-            if (lengthResult.IsValid)
-            {
-                _parameters.Length = lengthResult.Value;
-            }
-            else
-            {
-                errors.Add(lengthResult.ErrorMessage);
-                allValid = false;
-            }
+            //TODO: duplication +
+            allValid &= ValidateAndUpdate<double>(length, ValidateLength,
+                x => _parameters.Length = x, errors);
 
-            //TODO: duplication
-            var totalLengthResult = ValidateTotalLength(totalLength);
-            if (totalLengthResult.IsValid)
-            {
-                _parameters.TotalLength = totalLengthResult.Value;
-            }
-            else
-            {
-                errors.Add(totalLengthResult.ErrorMessage);
-                allValid = false;
-            }
+            //TODO: duplication +
+            allValid &= ValidateAndUpdate<double>(totalLength,
+                ValidateTotalLength,
+                x => _parameters.TotalLength = x, errors);
 
-            //TODO: duplication
-            var angleResult = ValidateAngle(angle);
-            if (angleResult.IsValid)
-            {
-                _parameters.Angle = angleResult.Value;
-            }
-            else
-            {
-                errors.Add(angleResult.ErrorMessage);
-                allValid = false;
-            }
+            //TODO: duplication +
+            allValid &= ValidateAndUpdate<double>(angle, ValidateAngle,
+                x => _parameters.Angle = x, errors);
 
             _parameters.ClearanceCone = coneEnabled;
-            //TODO: duplication
-            var coneResult = ValidateConeValue(coneValue, coneEnabled);
-            if (coneResult.IsValid)
-            {
-                _parameters.ConeValue = coneResult.Value;
-            }
-            else if (coneEnabled)
-            {
-                errors.Add(coneResult.ErrorMessage);
-                allValid = false;
-            }
+            //TODO: duplication +
+            allValid &= ValidateAndUpdate<double>(coneValue, 
+                x => ValidateConeValue(x, coneEnabled), 
+                x => _parameters.ConeValue = x, errors, coneEnabled);
 
             _parameters.ClearanceShank = shankEnabled;
-            //TODO: duplication
-            var shankDiameterResult = ValidateShankDiameterValue(
-                shankDiameterValue, shankEnabled);
-            if (shankDiameterResult.IsValid)
-            {
-                _parameters.ShankDiameterValue = shankDiameterResult.Value;
-            }
-            else if (shankEnabled)
-            {
-                errors.Add(shankDiameterResult.ErrorMessage);
-                allValid = false;
-            }
-            var shankLengthResult = ValidateShankLengthValue(
-                shankLengthValue, shankEnabled);
-            //TODO: duplication
-            if (shankLengthResult.IsValid)
-            {
-                _parameters.ShankLengthValue = shankLengthResult.Value;
-            }
-            else if (shankEnabled)
-            {
-                errors.Add(shankLengthResult.ErrorMessage);
-                allValid = false;
-            }
+            //TODO: duplication +
+            allValid &= ValidateAndUpdate<double>(shankDiameterValue, 
+                x => ValidateShankDiameterValue(x, shankEnabled), 
+                x => _parameters.ShankDiameterValue = x, errors,
+                shankEnabled);
+
+            //TODO: duplication +
+            allValid &= ValidateAndUpdate<double>(shankLengthValue, 
+                x => ValidateShankLengthValue(x, shankEnabled),
+                x => _parameters.ShankLengthValue = x, errors, shankEnabled);
 
             return allValid;
         }

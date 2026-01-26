@@ -30,10 +30,13 @@ namespace ORSAPR
         private bool _clearanceShank;
 
         /// <summary>
-        /// Хвостовик.
+        /// Диаметр хвостовика.
         /// </summary>
         private double _shankDiameterValue;
 
+        /// <summary>
+        /// Длина хвостовика.
+        /// </summary>
         private double _shankLengthValue;
 
         /// <summary>
@@ -101,22 +104,71 @@ namespace ORSAPR
         /// </summary>
         private double _maxConeValue;
 
-        //TODO: XML
+        //TODO: XML +
+        /// <summary>
+        /// Минимальное доступное значение диаметра хвостовика.
+        /// </summary>
         private double _minShankDiameterValue;
 
-        //TODO: XML
+        //TODO: XML +
+        /// <summary>
+        /// Максимальное доступное значение диаметра хвостовика.
+        /// </summary>
         private double _maxShankDiameterValue;
 
-        //TODO: XML
+        //TODO: XML +
+        /// <summary>
+        /// Минимальное доступное значение длины хвостовика.
+        /// </summary>
         private double _minShankLengthValue;
 
-        //TODO: XML
+        //TODO: XML +
+        /// <summary>
+        /// Максимальное доступное значение длины хвостовика.
+        /// </summary>
         private double _maxShankLengthValue;
 
         /// <summary>
         /// Формат отображения чисел с одним десятичным знаком.
         /// </summary>
         private const string NumberFormat = "F1";
+
+        /// <summary>
+        /// Первый коэфициент для вычисления зависимости 
+        /// обратного конуса от диаметра.
+        /// </summary>
+        private const double CoefficientForDependenciesCone1 = 0.25;
+
+        /// <summary>
+        /// Второй коэфициент для вычисления зависимости
+        /// обратного конуса от диаметра.
+        /// </summary>
+        private const double CoefficientForDependenciesCone2 = 0.75;
+
+        /// <summary>
+        /// Первый коэфициент для вычисления зависимостей длины.
+        /// </summary>
+        private const double CoefficientForDependenciesLength1 = 3;
+
+        /// <summary>
+        /// Второй коэфициент для вычисления зависимостей длины.
+        /// </summary>
+        private const double CoefficientForDependenciesLength2 = 8;
+
+        /// <summary>
+        /// Третий коэфициент для вычисления зависимостей длины.
+        /// </summary>
+        private const double CoefficientForDependenciesLength3 = 20;
+
+        /// <summary>
+        /// Общий коэфициент для вычисления зависимостей.
+        /// </summary>
+        private const double CoefficientForDependencies = 2;
+
+        /// <summary>
+        /// Коэфициент для вычисления зависимости хвостовика от диаметра.
+        /// </summary>
+        private const double CoefficientForDependenciesShank = 1.75;
 
         /// <summary>
         /// Минимальная величина угла при вершине.
@@ -225,7 +277,7 @@ namespace ORSAPR
         }
 
         /// <summary>
-        /// Диаметр хвостовика.
+        /// Диаметр хвостовика от 1.75×d до 2xd.
         /// </summary>
         public double ShankDiameterValue
         {
@@ -233,8 +285,9 @@ namespace ORSAPR
             set => _shankDiameterValue = value;
         }
 
+
         /// <summary>
-        /// Длина хвостовика.
+        /// Длина хвостовика от 2×(L-l) до 3×(L-l)
         /// </summary>
         public double ShankLengthValue
         {
@@ -293,15 +346,24 @@ namespace ORSAPR
             _clearanceCone = true;
 
             // Средние значения зависимых параметров
-            //TODO: to const
-            _coneValue = (_diameter * 0.25 + _diameter * 0.75) / 2;
-            _length = (3 * _diameter + 8 * _diameter) / 2;
-            _totalLength = Math.Min(_length + 20, 205);
+            //TODO: to const +
+            _coneValue = (_diameter * CoefficientForDependenciesCone1 + 
+                _diameter * CoefficientForDependenciesCone2)
+                / CoefficientForDependencies;
+            _length = (CoefficientForDependenciesLength1 * 
+                _diameter + CoefficientForDependenciesLength2 * 
+                _diameter) / CoefficientForDependencies;
+            _totalLength = Math.Min(_length +
+                CoefficientForDependenciesLength3, 205);
 
             _clearanceShank = false;
-            _shankDiameterValue = (_diameter * 1.25 + _diameter * 2) / 2;
-            _shankLengthValue = ((_totalLength - _length) * 2 +
-                (_totalLength - _length) * 3) / 2;
+            _shankDiameterValue = (_diameter 
+                * CoefficientForDependenciesShank + _diameter
+                * CoefficientForDependencies) / CoefficientForDependencies;
+            _shankLengthValue = ((_totalLength - _length) * 
+                CoefficientForDependencies + (_totalLength - _length)
+                * CoefficientForDependenciesLength1)
+                / CoefficientForDependencies;
 
             CalculateDepended();
         }
@@ -312,16 +374,20 @@ namespace ORSAPR
         /// </summary>
         private void CalculateDepended()
         {
-            //TODO: to const
-            _minLength = 3 * _diameter;
-            _maxLength = 8 * _diameter;
-            _minTotalLength = _length + 20;
-            _minConeValue = _diameter * 0.25;
-            _maxConeValue = _diameter * 0.75;
-            _minShankDiameterValue = _diameter * 1.25;
-            _maxShankDiameterValue = _diameter * 2;
-            _minShankLengthValue = (_totalLength - _length) * 2;
-            _maxShankLengthValue = (_totalLength - _length) * 3;
+            //TODO: to const +
+            _minLength = CoefficientForDependenciesLength1 * _diameter;
+            _maxLength = CoefficientForDependenciesLength2 * _diameter;
+            _minTotalLength = _length + CoefficientForDependenciesLength3;
+            _minConeValue = _diameter * CoefficientForDependenciesCone1;
+            _maxConeValue = _diameter * CoefficientForDependenciesCone2;
+            _minShankDiameterValue = _diameter * 
+                CoefficientForDependenciesShank;
+            _maxShankDiameterValue = _diameter * 
+                CoefficientForDependencies;
+            _minShankLengthValue = (_totalLength - _length) * 
+                CoefficientForDependencies;
+            _maxShankLengthValue = (_totalLength - _length) * 
+                CoefficientForDependenciesLength1;
         }
 
         /// <summary>
@@ -335,10 +401,14 @@ namespace ORSAPR
             //Проверка зависимости длины рабочей части от диаметра
             if (_length < MinLength || _length > MaxLength)
             {
+                //TODO: to const +
                 errors.Add($"Длина рабочей части должна быть в диапазоне " +
-                          $"{_minLength.ToString(NumberFormat)} - " +
-                          //TODO: to const
-                          $"{_maxLength.ToString(NumberFormat)} мм (3×d - 8×d)");
+                   $"{_minLength.ToString(NumberFormat)} - " +
+                   $"{_maxLength.ToString(NumberFormat)} мм " +
+                   $"({CoefficientForDependenciesLength1}" +
+                   $"×{_diameter.ToString(NumberFormat)}" +
+                   $" - {CoefficientForDependenciesLength2}" +
+                   $"×{_diameter.ToString(NumberFormat)})");
             }
 
             // Проверка общей длины
@@ -346,39 +416,55 @@ namespace ORSAPR
                 _totalLength > MaxTotalLength)
             {
                 errors.Add($"Общая длина должна быть в диапазоне " +
-                          $"{_minTotalLength.ToString(NumberFormat)} - " +
-                          $"{MaxTotalLength.ToString(NumberFormat)} мм " +
-                          $"(L+20 - 205)");
+                   $"{_minTotalLength.ToString(NumberFormat)} - " +
+                   $"{MaxTotalLength.ToString(NumberFormat)} мм " +
+                   $"({_length.ToString(NumberFormat)}+" +
+                   $"{CoefficientForDependenciesLength3} - " +
+                   $"{MaxTotalLength})");
             }
 
             // Проверка обратного конуса (если включен)
             if (_clearanceCone && (_coneValue < _minConeValue ||
                 _coneValue > _maxConeValue))
             {
-                errors.Add($"Значение обратного конуса должно быть в диапазоне " +
-                          $"{_minConeValue.ToString(NumberFormat)} - " +
-                          $"{_maxConeValue.ToString(NumberFormat)} мм " +
-                          $"(0.25×d - 0.75×d)");
+                errors.Add($"Значение обратного конуса должно быть в " +
+                  $"диапазоне {_minConeValue.ToString(NumberFormat)} - " +
+                  $"{_maxConeValue.ToString(NumberFormat)} мм " +
+                  $"({CoefficientForDependenciesCone1}" +
+                  $"×{_diameter.ToString(NumberFormat)} - " +
+                  $"{CoefficientForDependenciesCone2}" +
+                  $"×{_diameter.ToString(NumberFormat)})");
             }
 
             // Проверка диаметра хвостовика (если включен)
             if (_clearanceShank && (_shankDiameterValue < _minShankDiameterValue ||
                 _shankDiameterValue > _maxShankDiameterValue))
             {
-                errors.Add($"Значение диаметра хвостовика должно быть в диапазоне " +
-                          $"{_minShankDiameterValue.ToString(NumberFormat)} - " +
-                          $"{_maxShankDiameterValue.ToString(NumberFormat)} мм " +
-                          $"(1.25×d - 2×d)");
+                errors.Add($"Значение диаметра хвостовика должно быть в " +
+                  $"диапазоне" +
+                  $" {_minShankDiameterValue.ToString(NumberFormat)} - " +
+                  $"{_maxShankDiameterValue.ToString(NumberFormat)} мм " +
+                  $"({CoefficientForDependenciesShank}" +
+                  $"×{_diameter.ToString(NumberFormat)} - " +
+                  $"{CoefficientForDependencies}" +
+                  $"×{_diameter.ToString(NumberFormat)})");
             }
 
             // Проверка длины хвостовика (если включен)
             if (_clearanceShank && (_shankLengthValue < _minShankLengthValue ||
                 _shankLengthValue > _maxShankLengthValue))
             {
-                errors.Add($"Значение диаметра хвостовика должно быть в диапазоне " +
-                          $"{_minShankLengthValue.ToString(NumberFormat)} - " +
-                          $"{_maxShankLengthValue.ToString(NumberFormat)} мм " +
-                          $"(1.25×d - 2×d)");
+                double difference = _totalLength - _length;
+                errors.Add($"Длина хвостовика должна быть в диапазоне " + 
+                    $"{_minShankLengthValue.ToString(NumberFormat)}" +
+                    $" - " +
+                    $"{_maxShankLengthValue.ToString(NumberFormat)}" +
+                    $" мм ({CoefficientForDependencies}" +
+                    $"×({_totalLength.ToString(NumberFormat)}-" +
+                    $"{_length.ToString(NumberFormat)}) - " +
+                    $"{CoefficientForDependenciesLength1}" +
+                    $"×({_totalLength.ToString(NumberFormat)}-" +
+                    $"{_length.ToString(NumberFormat)}))");
             }
 
             return errors;

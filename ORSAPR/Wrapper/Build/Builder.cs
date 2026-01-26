@@ -38,14 +38,28 @@ namespace ORSAPR
         /// </summary>
         private const double ShankDeparture = 0.05;
 
-        //TODO: XML
-        private const double ShankBracingLength1 = 0.55;
+        //TODO: XML +
+        /// <summary>
+        /// Перый коэфициент отступа крепления хвостовика.
+        /// </summary>
+        private const double ShankBracingLength1 = 0.45;
 
-        //TODO: XML
-        private const double ShankBracingLength2 = 0.75;
+        //TODO: XML +
+        /// <summary>
+        /// Второй коэфициент отступа крепления хвостовика.
+        /// </summary>
+        private const double ShankBracingLength2 = 0.55;
 
-        //TODO: XML
-        private const double ShankBracingLength3 = 0.85;
+        //TODO: XML +
+        /// <summary>
+        /// Третий коэфициент отступа крепления хвостовика.
+        /// </summary>
+        private const double ShankBracingLength3 = 0.95;
+
+        /// <summary>
+        /// Четвёртый коэфициент отсутпа крепления хвостовика.
+        /// </summary>
+        private const double ShankBracingLength4 = 1.5;
 
         /// <summary>
         /// Выполняет построение 3D-модели сверла на основе заданных 
@@ -71,6 +85,7 @@ namespace ORSAPR
                 CreateSpiralFlutes(parameters);
                 CreateConicalFlutes(parameters);
                 CreateDrillPoint(parameters);
+                CreateShankBracing(parameters);
 
                 return true;
             }
@@ -308,18 +323,29 @@ namespace ORSAPR
             _wrapper.DrawAxisLine(doc2DAngle, za1, ya1, za2, ya2);
         }
 
-        //TODO: remove
+
+        //TODO: remove +
         /// <summary>
         /// Создает упоры на хвостовике.
         /// </summary>
         /// <param name="parameters">Параметры сверла.</param>
         private void CreateShankBracing(Parameters parameters)
         {
-            double shankLength = parameters.ShankLengthValue;
-            double shankDiameter = parameters.ShankDiameterValue;
+            double shankLength = -parameters.ShankLengthValue;
+            double shankRadius = parameters.ShankDiameterValue / 2;
 
-            ksEntity shankBracing1 = _wrapper.CreateCircleGuide(
-                shankLength * ShankBracingLength1, shankDiameter);
+            ksEntity binding1 = _wrapper.CreateCircleGuide(shankLength *
+                ShankBracingLength1, shankLength *
+                ShankBracingLength3, shankRadius, false);
+            ksEntity bindingCut1 = _wrapper.CutRotation(binding1,
+                (short)Direction_Type.dtNormal, true, 360);
+            _wrapper.CreateCircularCopy(2, bindingCut1);
+            ksEntity binding2 = _wrapper.CreateCircleGuide(shankLength *
+                ShankBracingLength2, shankLength *
+                ShankBracingLength4, shankRadius, true);
+            ksEntity bindingCut2 = _wrapper.CutRotation(binding2,
+                (short)Direction_Type.dtNormal, true, 360);
+            _wrapper.CreateCircularCopy(2, bindingCut2);
         }
     }
 }

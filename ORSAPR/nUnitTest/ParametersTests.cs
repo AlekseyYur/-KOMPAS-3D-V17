@@ -6,373 +6,358 @@ namespace nUnitTest
     [TestFixture]
     public class ParametersTests
     {
+
+        ///<summary>
+        ///Тестовый диаметр сверла.
+        ///</summary>
+        private const double TestDiameter = 10.0;
+
+        /// <summary>
+        /// Тестовая длина рабочей части.
+        /// </summary>
+        private const double TestLength = 50.0;
+
+        /// <summary>
+        /// Тестовая общая длина сверла.
+        /// </summary>
+        private const double TestTotalLength = 80.0;
+
+        /// <summary>
+        /// Минимальная длина рабочей части для тестового диаметра.
+        /// </summary>
+        private const double TestMinLength = 30.0;
+
+        /// <summary>
+        /// Максимальная длина рабочей части для тестового диаметра.
+        /// </summary>
+        private const double TestMaxLength = 80.0;
+
+        /// <summary>
+        /// Минимальный обратный конус для тестового диаметра.
+        /// </summary>
+        private const double TestMinConeValue = 2.5;
+
+        /// <summary>
+        /// Максимальный обратный конус для тестового диаметра.
+        /// </summary>
+        private const double TestMaxConeValue = 7.5;
+
+        /// <summary>
+        /// Минимальный диаметр хвостовика для тестового диаметра.
+        /// </summary>
+        private const double TestMinShankDiameter = 17.5;
+
+        /// <summary>
+        /// Максимальный диаметр хвостовика для тестового диаметра.
+        /// </summary>
+        private const double TestMaxShankDiameter = 20.0;
+
+        /// <summary>
+        /// Минимальная длина хвостовика для минимальной разницы длин.
+        /// </summary>
+        private const double TestMinShankLength = 80.0;
+
+        /// <summary>
+        /// Минимальная общая длина для минимальной рабочей части.
+        /// </summary>
+        private const double TestMinTotalLength = 70.0;
+
+        /// <summary>
+        /// Максимальная общая длина сверла.
+        /// </summary>
+        private const double MaxTotalLength = 205.0;
+
+        /// <summary>
+        /// Допустимая погрешность для сравнений double.
+        /// </summary>
+        private const double Tolerance = 0.001;
+
         [Test]
-        [Description("Проверка валидации когда длина равна минимальной границе")]
-        public void ValidateRules_LengthEqualsMinBoundary_NoError()
+        [Description("Проверка установки значений по умолчанию")]
+        public void Constructor_DefaultValues_Valid()
         {
             var parameters = new Parameters();
-            parameters.Diameter = 10.0;
-            parameters.Length = 30.0; // Минимум: 3×10
-            parameters.TotalLength = 50.0; // 30+20
-
             var errors = parameters.ValidateRules();
+
             Assert.That(errors, Is.Empty);
+            Assert.That(parameters.Angle, Is.EqualTo(45.0));
+            Assert.That(parameters.Diameter, Is.EqualTo(10.0));
+            Assert.That(parameters.ClearanceCone, Is.True);
         }
 
         [Test]
-        [Description("Проверка валидации когда длина равна максимальной границе")]
-        public void ValidateRules_LengthEqualsMaxBoundary_NoError()
+        [Description("Валидация длины рабочей части вне диапазона")]
+        public void ValidateRules_LengthOutOfRange_ReturnsError()
         {
-            var parameters = new Parameters();
-            parameters.Diameter = 10.0;
-            parameters.Length = 80.0; // Максимум: 8×10
-            parameters.TotalLength = 100.0; // 80+20
+            var parameters = CreateTestParameters();
+            parameters.Length = TestMinLength - 0.1;
 
             var errors = parameters.ValidateRules();
-            Assert.That(errors, Is.Empty);
+
+            AssertSingleError(errors, "Длина рабочей части");
         }
 
         [Test]
-        [Description("Проверка валидации когда общая длина равна минимальной границе")]
-        public void ValidateRules_TotalLengthEqualsMinBoundary_NoError()
+        [Description("Валидация общей длины вне диапазона")]
+        public void ValidateRules_TotalLengthOutOfRange_ReturnsError()
         {
-            var parameters = new Parameters();
-            parameters.Length = 50.0;
-            parameters.TotalLength = 70.0; // 50+20
+            var parameters = CreateTestParameters();
+            parameters.TotalLength = TestMinTotalLength - 0.1;
 
             var errors = parameters.ValidateRules();
-            Assert.That(errors, Is.Empty);
+
+            AssertSingleError(errors, "Общая длина");
         }
 
         [Test]
-        [Description("Проверка валидации когда общая длина равна максимальной границе")]
-        public void ValidateRules_TotalLengthEqualsMaxBoundary_NoError()
+        [Description("Валидация обратного конуса вне диапазона при включенном")]
+        public void ValidateRules_ConeValueOutOfRangeEnabled_ReturnsError()
         {
-            var parameters = new Parameters();
-            parameters.Diameter = 20.0;
-            parameters.Length = 160.0; // 205-20
-            parameters.TotalLength = 205.0; // Максимум
-
-            var errors = parameters.ValidateRules();
-            Assert.That(errors, Is.Empty);
-        }
-
-        [Test]
-        [Description("Проверка валидации обратного конуса на нижней границе")]
-        public void ValidateRules_ConeValueAtMinBoundaryEnabled_NoError()
-        {
-            var parameters = new Parameters();
-            parameters.Diameter = 10.0;
+            var parameters = CreateTestParameters();
             parameters.ClearanceCone = true;
-            parameters.ConeValue = 2.5; // Минимум: 0.25×10
+            parameters.ConeValue = TestMinConeValue - 0.1;
 
             var errors = parameters.ValidateRules();
-            Assert.That(errors, Is.Empty);
+
+            AssertSingleError(errors, "обратного конуса");
         }
 
         [Test]
-        [Description("Проверка валидации обратного конуса на верхней границе")]
-        public void ValidateRules_ConeValueAtMaxBoundaryEnabled_NoError()
+        [Description("Проверка отключения валидации обратного конуса")]
+        public void ValidateRules_ConeDisabled_NoValidation()
         {
-            var parameters = new Parameters();
-            parameters.Diameter = 10.0;
-            parameters.ClearanceCone = true;
-            parameters.ConeValue = 7.5; // Максимум: 0.75×10
-
-            var errors = parameters.ValidateRules();
-            Assert.That(errors, Is.Empty);
-        }
-
-        [Test]
-        [Description("Проверка валидации обратного конуса ниже минимума")]
-        public void ValidateRules_ConeValueBelowMinEnabled_ReturnsError()
-        {
-            var parameters = new Parameters();
-            parameters.Diameter = 10.0;
-            parameters.ClearanceCone = true;
-            parameters.ConeValue = 2.4; // Ниже 2.5
-
-            var errors = parameters.ValidateRules();
-            Assert.That(errors, Has.Count.EqualTo(1));
-            Assert.That(errors[0], Contains.Substring("обратного конуса"));
-        }
-
-        [Test]
-        [Description("Проверка валидации обратного конуса выше максимума")]
-        public void ValidateRules_ConeValueAboveMaxEnabled_ReturnsError()
-        {
-            var parameters = new Parameters();
-            parameters.Diameter = 10.0;
-            parameters.ClearanceCone = true;
-            parameters.ConeValue = 7.6; // Выше 7.5
-
-            var errors = parameters.ValidateRules();
-            Assert.That(errors, Has.Count.EqualTo(1));
-            Assert.That(errors[0], Contains.Substring("обратного конуса"));
-        }
-
-        [Test]
-        [Description("Проверка валидации диаметра хвостовика на нижней границе")]
-        public void ValidateRules_ShankDiameterAtMinBoundaryEnabled_NoError()
-        {
-            var parameters = new Parameters();
-            parameters.Diameter = 10.0;
-            parameters.ClearanceShank = true;
-            parameters.ShankDiameterValue = 12.5; // Минимум: 1.25×10
-
-            var errors = parameters.ValidateRules();
-            Assert.That(errors, Is.Empty);
-        }
-
-        [Test]
-        [Description("Проверка валидации диаметра хвостовика на верхней границе")]
-        public void ValidateRules_ShankDiameterAtMaxBoundaryEnabled_NoError()
-        {
-            var parameters = new Parameters();
-            parameters.Diameter = 10.0;
-            parameters.ClearanceShank = true;
-            parameters.ShankDiameterValue = 20.0; // Максимум: 2×10
-
-            var errors = parameters.ValidateRules();
-            Assert.That(errors, Is.Empty);
-        }
-
-        [Test]
-        [Description("Проверка валидации диаметра хвостовика ниже минимума")]
-        public void ValidateRules_ShankDiameterBelowMinEnabled_ReturnsError()
-        {
-            var parameters = new Parameters();
-            parameters.Diameter = 10.0;
-            parameters.ClearanceShank = true;
-            parameters.ShankDiameterValue = 12.4; // Ниже 12.5
-
-            var errors = parameters.ValidateRules();
-            Assert.That(errors, Has.Count.EqualTo(1));
-            Assert.That(errors[0], Contains.Substring("диаметра хвостовика"));
-        }
-
-        [Test]
-        [Description("Проверка валидации диаметра хвостовика выше максимума")]
-        public void ValidateRules_ShankDiameterAboveMaxEnabled_ReturnsError()
-        {
-            var parameters = new Parameters();
-            parameters.Diameter = 10.0;
-            parameters.ClearanceShank = true;
-            parameters.ShankDiameterValue = 20.1; // Выше 20.0
-
-            var errors = parameters.ValidateRules();
-            Assert.That(errors, Has.Count.EqualTo(1));
-            Assert.That(errors[0], Contains.Substring("диаметра хвостовика"));
-        }
-
-        [Test]
-        [Description("Проверка валидации длины хвостовика на нижней границе")]
-        public void ValidateRules_ShankLengthAtMinBoundaryEnabled_NoError()
-        {
-            var parameters = new Parameters();
-            parameters.Diameter = 10.0;
-            parameters.Length = 50.0;
-            parameters.TotalLength = 80.0;
-            parameters.ClearanceShank = true;
-            parameters.ShankLengthValue = 60.0; // Минимум: 2×(80-50)
-
-            var errors = parameters.ValidateRules();
-            Assert.That(errors, Is.Empty);
-        }
-
-        [Test]
-        [Description("Проверка валидации длины хвостовика на верхней границе")]
-        public void ValidateRules_ShankLengthAtMaxBoundaryEnabled_NoError()
-        {
-            var parameters = new Parameters();
-            parameters.Diameter = 10.0;
-            parameters.Length = 50.0;
-            parameters.TotalLength = 80.0;
-            parameters.ClearanceShank = true;
-            parameters.ShankLengthValue = 90.0; // Максимум: 3×(80-50)
-
-            var errors = parameters.ValidateRules();
-            Assert.That(errors, Is.Empty);
-        }
-
-        [Test]
-        [Description("Проверка валидации длины хвостовика ниже минимума")]
-        public void ValidateRules_ShankLengthBelowMinEnabled_ReturnsError()
-        {
-            var parameters = new Parameters();
-            parameters.Diameter = 10.0;
-            parameters.Length = 50.0;
-            parameters.TotalLength = 80.0;
-            parameters.ClearanceShank = true;
-            parameters.ShankLengthValue = 59.9; // Ниже 60.0
-
-            var errors = parameters.ValidateRules();
-            Assert.That(errors, Has.Count.EqualTo(1));
-            Assert.That(errors[0], Contains.Substring("диаметра хвостовика"));
-        }
-
-        [Test]
-        [Description("Проверка валидации длины хвостовика выше максимума")]
-        public void ValidateRules_ShankLengthAboveMaxEnabled_ReturnsError()
-        {
-            var parameters = new Parameters();
-            parameters.Diameter = 10.0;
-            parameters.Length = 50.0;
-            parameters.TotalLength = 80.0;
-            parameters.ClearanceShank = true;
-            parameters.ShankLengthValue = 90.1; // Выше 90.0
-
-            var errors = parameters.ValidateRules();
-            Assert.That(errors, Has.Count.EqualTo(1));
-            Assert.That(errors[0], Contains.Substring("диаметра хвостовика"));
-        }
-
-        [Test]
-        [Description("Проверка валидации с включенным конусом и выключенным хвостовиком")]
-        public void ValidateRules_ConeEnabledShankDisabled_ValidatesOnlyCone()
-        {
-            var parameters = new Parameters();
-            parameters.Diameter = 10.0;
-            parameters.Length = 55.0;
-            parameters.TotalLength = 75.0;
-            parameters.ClearanceCone = true;
-            parameters.ConeValue = 5.0;
-            parameters.ClearanceShank = false;
-            parameters.ShankDiameterValue = 100.0; // Не должно проверяться
-            parameters.ShankLengthValue = 200.0;   // Не должно проверяться
-
-            var errors = parameters.ValidateRules();
-            Assert.That(errors, Is.Empty);
-        }
-
-        [Test]
-        [Description("Проверка валидации с выключенным конусом и включенным хвостовиком")]
-        public void ValidateRules_ConeDisabledShankEnabled_ValidatesOnlyShank()
-        {
-            var parameters = new Parameters();
-            parameters.Diameter = 10.0;
-            parameters.Length = 55.0;
-            parameters.TotalLength = 75.0;
+            var parameters = CreateTestParameters();
             parameters.ClearanceCone = false;
-            parameters.ConeValue = 100.0; // Не должно проверяться
+            parameters.ConeValue = 100.0;
+
+            var errors = parameters.ValidateRules();
+
+            Assert.That(errors, Is.Empty);
+        }
+
+        [Test]
+        [Description("Валидация диаметра хвостовика вне диапазона")]
+        public void ValidateRules_ShankDiameterOutOfRange_ReturnsError()
+        {
+            var parameters = CreateTestParameters();
             parameters.ClearanceShank = true;
-            parameters.ShankDiameterValue = 15.0;
-            parameters.ShankLengthValue = 60.0;
+            parameters.ShankDiameterValue = TestMinShankDiameter - 0.1;
+            parameters.ShankLengthValue = 75.0;
 
             var errors = parameters.ValidateRules();
-            Assert.That(errors, Is.Empty);
+
+            AssertSingleError(errors, "диаметра хвостовика");
         }
 
         [Test]
-        [Description("Проверка что конус не проверяется при выключенном флаге даже если невалиден")]
-        public void ValidateRules_ConeDisabledInvalidValue_NoError()
+        [Description("Валидация длины хвостовика вне диапазона")]
+        public void ValidateRules_ShankLengthOutOfRange_ReturnsError()
         {
-            var parameters = new Parameters();
-            parameters.Diameter = 10.0;
-            parameters.ClearanceCone = false;
-            parameters.ConeValue = 100.0; // Далеко за пределами диапазона
-
-            var errors = parameters.ValidateRules();
-            Assert.That(errors, Is.Empty);
-        }
-
-        [Test]
-        [Description("Проверка что хвостовик не проверяется при выключенном флаге даже если невалиден")]
-        public void ValidateRules_ShankDisabledInvalidValues_NoError()
-        {
-            var parameters = new Parameters();
-            parameters.Diameter = 10.0;
-            parameters.Length = 50.0;
-            parameters.TotalLength = 80.0;
-            parameters.ClearanceShank = false;
-            parameters.ShankDiameterValue = 100.0; // Не должно проверяться
-            parameters.ShankLengthValue = 200.0;   // Не должно проверяться
-
-            var errors = parameters.ValidateRules();
-            Assert.That(errors, Is.Empty);
-        }
-
-        [Test]
-        [Description("Проверка формата чисел в сообщениях об ошибках")]
-        public void ValidateRules_ErrorMessages_UseCorrectNumberFormat()
-        {
-            var parameters = new Parameters();
-            parameters.Diameter = 10.0;
-            parameters.Length = 100.0; // Выше максимума
-            parameters.TotalLength = 120.0; // Чтобы не было ошибки по TotalLength
-
-            var errors = parameters.ValidateRules();
-            Assert.That(errors[0], Contains.Substring("30,0 - 80,0").Or.Contains("30.0 - 80.0"));
-        }
-
-        [Test]
-        [Description("Проверка когда длина меньше минимальной")]
-        public void ValidateRules_LengthLessThanMin_ReturnsError()
-        {
-            var parameters = new Parameters();
-            parameters.Diameter = 10.0;
-            parameters.Length = 29.9; // Меньше 30.0
-            parameters.TotalLength = 49.9; // 29.9+20
-
-            var errors = parameters.ValidateRules();
-            Assert.That(errors, Has.Count.EqualTo(1));
-            Assert.That(errors[0], Contains.Substring("Длина рабочей части"));
-        }
-
-        [Test]
-        [Description("Проверка когда длина больше максимальной")]
-        public void ValidateRules_LengthGreaterThanMax_ReturnsError()
-        {
-            var parameters = new Parameters();
-            parameters.Diameter = 10.0;
-            parameters.Length = 80.1; // Больше 80.0
-            parameters.TotalLength = 100.1; // 80.1+20
-
-            var errors = parameters.ValidateRules();
-            Assert.That(errors, Has.Count.EqualTo(1));
-            Assert.That(errors[0], Contains.Substring("Длина рабочей части"));
-        }
-
-        [Test]
-        [Description("Проверка когда общая длина меньше минимальной")]
-        public void ValidateRules_TotalLengthLessThanMin_ReturnsError()
-        {
-            var parameters = new Parameters();
-            parameters.Length = 50.0;
-            parameters.TotalLength = 69.9; // Меньше 50.0+20=70.0
-
-            var errors = parameters.ValidateRules();
-            Assert.That(errors, Has.Count.EqualTo(1));
-            Assert.That(errors[0], Contains.Substring("Общая длина"));
-        }
-
-        [Test]
-        [Description("Проверка когда общая длина больше максимальной")]
-        public void ValidateRules_TotalLengthGreaterThanMax_ReturnsError()
-        {
-            var parameters = new Parameters();
-            parameters.Length = 50.0;
-            parameters.TotalLength = 205.1; // Больше 205.0
-
-            var errors = parameters.ValidateRules();
-            Assert.That(errors, Has.Count.EqualTo(1));
-            Assert.That(errors[0], Contains.Substring("Общая длина"));
-        }
-
-        [Test]
-        [Description("Проверка метода ValidateRules с нулевым значением хвостовика")]
-        public void ValidateRules_ZeroShankValuesEnabled_ReturnsError()
-        {
-            var parameters = new Parameters();
-            parameters.Diameter = 10.0;
-            parameters.Length = 55.0;
-            parameters.TotalLength = 75.0;
+            var parameters = CreateTestParameters();
             parameters.ClearanceShank = true;
-            parameters.ShankDiameterValue = 0.0; // Ноль
-            parameters.ShankLengthValue = 0.0;   // Ноль
+            parameters.ShankDiameterValue = TestMinShankDiameter;
+            parameters.ShankLengthValue = 59.9;
 
             var errors = parameters.ValidateRules();
+
+            AssertSingleError(errors, "Длина хвостовика");
+        }
+
+        [Test]
+        [Description("Валидация обоих параметров хвостовика вне диапазона")]
+        public void ValidateRules_BothShankParamsOutOfRange_ReturnsTwoErrors()
+        {
+            var parameters = CreateTestParameters();
+            parameters.ClearanceShank = true;
+            parameters.ShankDiameterValue = TestMinShankDiameter - 0.1;
+            parameters.ShankLengthValue = 59.9;
+
+            var errors = parameters.ValidateRules();
+
             Assert.That(errors, Has.Count.EqualTo(2));
+        }
+
+        [Test]
+        [Description("Проверка отключения валидации хвостовика")]
+        public void ValidateRules_ShankDisabled_NoValidation()
+        {
+            var parameters = CreateTestParameters();
+            parameters.ClearanceShank = false;
+            parameters.ShankDiameterValue = 5.0;
+            parameters.ShankLengthValue = 10.0;
+
+            var errors = parameters.ValidateRules();
+
+            Assert.That(errors, Is.Empty);
+        }
+
+        [Test]
+        [Description("Проверка всех допустимых граничных значений")]
+        public void ValidateRules_AllValidBoundaryValues_NoErrors()
+        {
+            var parameters = new Parameters();
+            parameters.Diameter = TestDiameter;
+            parameters.Angle = 60.0;
+            parameters.Length = TestMaxLength;
+            parameters.TotalLength = 100.0;
+            parameters.ClearanceCone = true;
+            parameters.ConeValue = TestMaxConeValue;
+            parameters.ClearanceShank = true;
+            parameters.ShankDiameterValue = TestMaxShankDiameter;
+
+            var lengthDiff = 100.0 - TestMaxLength;
+            parameters.ShankLengthValue = 2 * lengthDiff + 0.1;
+
+            var errors = parameters.ValidateRules();
+
+            Assert.That(errors, Is.Empty);
+        }
+
+        [Test]
+        [Description("Проверка пересчета зависимых значений при изменении диаметра")]
+        public void DiameterSetter_RecalculatesDependentValues()
+        {
+            var parameters = new Parameters();
+            parameters.Diameter = 15.0;
+
+            Assert.That(parameters.MinLength,
+                Is.EqualTo(3 * 15.0).Within(Tolerance));
+            Assert.That(parameters.MaxLength,
+                Is.EqualTo(8 * 15.0).Within(Tolerance));
+            Assert.That(parameters.MinConeValue,
+                Is.EqualTo(0.25 * 15.0).Within(Tolerance));
+        }
+
+        [Test]
+        [Description("Проверка пересчета общей длины при изменении рабочей длины")]
+        public void LengthSetter_RecalculatesTotalLength()
+        {
+            var parameters = new Parameters();
+            parameters.Length = 60.0;
+
+            Assert.That(parameters.MinTotalLength,
+                Is.EqualTo(80.0).Within(Tolerance));
+        }
+
+        [Test]
+        [Description("Проверка пересчета длины хвостовика при изменении общей длины")]
+        public void TotalLengthSetter_RecalculatesShankLength()
+        {
+            var parameters = new Parameters();
+            parameters.Length = 50.0;
+            parameters.TotalLength = 100.0;
+
+            var diff = 100.0 - parameters.Length;
+            Assert.That(parameters.MinShankLengthValue,
+                Is.EqualTo(2 * diff).Within(Tolerance));
+            Assert.That(parameters.MaxShankLengthValue,
+                Is.EqualTo(3 * diff).Within(Tolerance));
+        }
+
+        [Test]
+        [Description("Проверка возврата всех ошибок при множественных нарушениях")]
+        public void ValidateRules_MultipleErrors_ReturnsAll()
+        {
+            var parameters = new Parameters();
+            parameters.Diameter = TestDiameter;
+            parameters.Length = 25.0;
+            parameters.TotalLength = 30.0;
+            parameters.ClearanceCone = true;
+            parameters.ConeValue = 1.0;
+            parameters.ClearanceShank = true;
+            parameters.ShankDiameterValue = 10.0;
+            parameters.ShankLengthValue = 9.9;
+
+            var errors = parameters.ValidateRules();
+
+            Assert.That(errors, Has.Count.EqualTo(5));
+        }
+
+        [Test]
+        [Description("Проверка значений доступных только для чтения свойств")]
+        public void ReadOnlyProperties_ReturnCorrectValues()
+        {
+            var parameters = new Parameters();
+
+            Assert.That(parameters.MinAngle, Is.EqualTo(30.0));
+            Assert.That(parameters.MaxAngle, Is.EqualTo(60.0));
+            Assert.That(parameters.MinDiameter, Is.EqualTo(1.0));
+            Assert.That(parameters.MaxDiameter, Is.EqualTo(20.0));
+            Assert.That(parameters.MaxTotalLength,
+                Is.EqualTo(MaxTotalLength));
+        }
+
+        [Test]
+        [Description("Проверка установки и получения угла")]
+        public void AngleProperty_CanBeSetAndGet()
+        {
+            var parameters = new Parameters();
+            parameters.Angle = 55.5;
+            Assert.That(parameters.Angle, Is.EqualTo(55.5));
+        }
+
+        [Test]
+        [Description("Проверка установки и получения булевых свойств")]
+        public void BooleanProperties_CanBeSetAndGet()
+        {
+            var parameters = new Parameters();
+            parameters.ClearanceCone = false;
+            parameters.ClearanceShank = true;
+
+            Assert.That(parameters.ClearanceCone, Is.False);
+            Assert.That(parameters.ClearanceShank, Is.True);
+        }
+
+        [Test]
+        [Description("Проверка минимальных граничных значений")]
+        public void ValidateRules_MinimalBoundaryValues_NoErrors()
+        {
+            var parameters = new Parameters();
+            parameters.Diameter = TestDiameter;
+            parameters.Angle = 30.0;
+            parameters.Length = TestMinLength;
+            parameters.TotalLength = TestMinTotalLength;
+            parameters.ClearanceCone = true;
+            parameters.ConeValue = TestMinConeValue;
+            parameters.ClearanceShank = true;
+            parameters.ShankDiameterValue = TestMinShankDiameter;
+            parameters.ShankLengthValue = TestMinShankLength;
+
+            var errors = parameters.ValidateRules();
+
+            Assert.That(errors, Is.Empty);
+        }
+
+        [Test]
+        [Description("Проверка формата сообщений об ошибках")]
+        public void ValidateRules_ErrorMessages_HaveCorrectFormat()
+        {
+            var parameters = new Parameters();
+            parameters.Diameter = TestDiameter;
+            parameters.Length = TestMaxLength + 10.0;
+            parameters.TotalLength = TestMaxLength + 30.0;
+
+            var errors = parameters.ValidateRules();
+
+            Assert.That(errors, Has.Count.EqualTo(1));
+            Assert.That(errors[0], Contains.Substring("30,0 - 80,0")
+                .Or.Contains("30.0 - 80.0"));
+        }
+
+        private Parameters CreateTestParameters()
+        {
+            return new Parameters
+            {
+                Diameter = TestDiameter,
+                Length = TestLength,
+                TotalLength = TestTotalLength
+            };
+        }
+
+        private void AssertSingleError(List<string> errors, string substring)
+        {
+            Assert.That(errors, Has.Count.EqualTo(1));
+            Assert.That(errors[0], Contains.Substring(substring));
         }
     }
 }

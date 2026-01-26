@@ -31,9 +31,6 @@ namespace ORSAPR
         /// </summary>
         private const double ConicSpiralDiamFactor = 6.5;
 
-        //TODO: XML
-        private const double ShankDepth = 0.15;
-
         /// <summary>
         /// Получает активную деталь из текущего документа.
         /// </summary>
@@ -111,27 +108,6 @@ namespace ORSAPR
         }
 
         /// <summary>
-        /// Сохраняет текущий 3D-документ в файл.
-        /// </summary>
-        /// <param name="filePath">Полный путь к файлу для сохранения.</param>
-        /// <returns>
-        /// <c>true</c> - если документ успешно сохранен; 
-        /// <c>false</c> - в случае ошибки сохранения.
-        /// </returns>
-        public bool SaveDocument(string filePath)
-        {
-            try
-            {
-                _document3D.SaveAs(filePath);
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
-        }
-
-        /// <summary>
         /// Создает новый эскиз на указанной плоскости.
         /// </summary>
         /// <param name="plane">Тип плоскости для создания эскиза.</param>
@@ -151,8 +127,9 @@ namespace ORSAPR
                 entitySketch.Create();
                 return entitySketch;
             }
-            catch
+            catch (Exception ex)
             {
+                Console.WriteLine($"Ошибка создания эскиза: {ex.Message}");
                 return null;
             }
         }
@@ -171,12 +148,14 @@ namespace ORSAPR
             {
                 var sketchDefinition = (ksSketchDefinition)sketch.GetDefinition();
                 return sketchDefinition.BeginEdit();
+                //TODO: ?? +
             }
-            catch
+            catch (Exception ex)
             {
-                //TODO: ??
+                Console.WriteLine($"Ошибка редактирования эскиза: {ex.Message}");
                 return null;
             }
+            
         }
 
         /// <summary>
@@ -189,10 +168,13 @@ namespace ORSAPR
             {
                 var sketchDefinition = (ksSketchDefinition)sketch.GetDefinition();
                 sketchDefinition.EndEdit();
+                //TODO: ?? +
             }
-            //TODO: ??
-
-            catch { }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Ошибка завершения редактирования эскиза: {ex.Message}");
+            }
+           
         }
 
         /// <summary>
@@ -209,10 +191,12 @@ namespace ORSAPR
             try
             {
                 doc2D.ksLineSeg(x1, y1, x2, y2, 1);
+                //TODO: ?? +
             }
-            //TODO: ??
-
-            catch { }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Ошибка рисования линии: {ex.Message}");
+            }
         }
 
         /// <summary>
@@ -229,11 +213,40 @@ namespace ORSAPR
             try
             {
                 doc2D.ksLineSeg(x1, y1, x2, y2, 3);
+                //TODO: ?? +
             }
-            //TODO: ??
-
-            catch { }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Ошибка рисования осевой линии: {ex.Message}");
+            }
         }
+
+        /// <summary>
+        /// Рисует дугу в 2D-документе эскиза по центральной точке,
+        /// радиусу и углам.
+        /// </summary>
+        /// <param name="doc2D">2D-документ эскиза.</param>
+        /// <param name="centerX">X-координата центра дуги.</param>
+        /// <param name="centerY">Y-координата центра дуги.</param>
+        /// <param name="radius">Радиус дуги.</param>
+        /// <param name="startAngle">Начальный угол в градусах.</param>
+        /// <param name="endAngle">Конечный угол в градусах.</param>
+        /// <param name="style">Стиль линии.</param>
+        public void DrawArc(ksDocument2D doc2D, double centerX, 
+            double centerY, double radius, double startAngle,
+            double endAngle, int style = 1)
+        {
+            try
+            {
+                doc2D.ksArcByAngle(centerX, centerY, radius,
+                    startAngle, endAngle, 1, style);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Ошибка рисования дуги: {ex.Message}");
+            }
+        }
+
 
         /// <summary>
         /// Создает операцию вращения для формирования тела вращения.
@@ -295,13 +308,19 @@ namespace ORSAPR
         {
             ksEntity spiralEntity = _part.NewEntity(
                 (short)Obj3dType.o3d_cylindricSpiral);
-            //TODO: {}
-            if (spiralEntity == null) return null;
+            //TODO: {} +
+            if (spiralEntity == null)
+            {
+                return null;
+            }
 
             ksCylindricSpiralDefinition spiralDef =
                 spiralEntity.GetDefinition();
-            //TODO: {}
-            if (spiralDef == null) return null;
+            //TODO: {} +
+            if (spiralDef == null)
+            {
+                return null;
+            }
 
             spiralDef.buildMode = 2;
             spiralDef.height = drillLength;
@@ -331,35 +350,100 @@ namespace ORSAPR
         }
 
         /// <summary>
-        /// Создает эскиз профиля выступа хвостовика.
+        /// Создаёт эскиз профиля креплений хвостовика.
         /// </summary>
-        /// <param name="length">Длина хвостовика.</param>
-        /// <param name="depth">Глубина выступа.</param>
-        /// <returns>Эскиз профиля выступа.</returns>
-        public ksEntity CreateCircleGuide(double length, double depth)
+        /// <param name="length">Длина крепления.</param>
+        /// <param name="depth">Радиус хвостовика.</param>
+        /// <param name="plane">Значение для определения оси.</param>
+        /// <returns>Эскиз профиля крепления хвостовика.</returns>
+        public ksEntity CreateCircleGuide(double shankLength1, double shankLength2, double shankRadius, bool plane)
         {
-            ksEntity basePlane = _part.GetDefaultEntity(
-                (short)Obj3dType.o3d_planeXOY);
-            ksEntity offsetPlane = _part.NewEntity(
-                (short)Obj3dType.o3d_planeOffset);
-            ksPlaneOffsetDefinition offsetDef = offsetPlane.GetDefinition();
-            offsetDef.SetPlane(basePlane);
-            offsetDef.offset = -length;
-            offsetDef.direction = true;
-            offsetPlane.Create();
+            double bindingRadius = shankRadius / 2;
+            double arcPoint1 = shankLength1 - bindingRadius;
+            double arcPoint2 = shankLength2 + bindingRadius;
 
-            ksEntity sketch = _part.NewEntity((short)Obj3dType.o3d_sketch);
-            ksSketchDefinition sketchDef = sketch.GetDefinition();
-            sketchDef.SetPlane(offsetPlane);
-            sketch.Create();
+            if (plane)
+            {
+                ksEntity basePlane = _part.GetDefaultEntity(
+                    (short)Obj3dType.o3d_planeYOZ);
+                ksEntity offsetPlane = _part.NewEntity(
+                    (short)Obj3dType.o3d_planeOffset);
+                ksPlaneOffsetDefinition offsetDef = offsetPlane.GetDefinition();
+                offsetDef.SetPlane(basePlane);
+                offsetDef.offset = shankRadius;
+                offsetDef.direction = true;
+                offsetPlane.Create();
 
-            ksDocument2D doc2D = sketchDef.BeginEdit();
+                
 
-            long circleHandle = doc2D.ksCircle(depth, 0, depth * ShankDepth, 1);
+                ksEntity sketch = _part.NewEntity((short)Obj3dType.o3d_sketch);
+                ksSketchDefinition sketchDef = sketch.GetDefinition();
+                sketchDef.SetPlane(offsetPlane);
+                sketch.Create();
 
-            sketchDef.EndEdit();
+                ksDocument2D doc2D = sketchDef.BeginEdit();
 
-            return sketch;
+                double z1 = shankLength1;
+                double y1 = 0;
+                double z2 = shankLength2;
+                double y2 = y1;
+                double z3 = arcPoint1;
+                double y3 = bindingRadius;
+                double z4 = arcPoint2;
+                double y4 = y3;
+                
+
+                DrawLineSeg(doc2D, z1, y1, z2, y2);
+                DrawArc(doc2D, z3, y1, bindingRadius, 0, 90, 1);
+                DrawLineSeg(doc2D, z3, y3, z4, y4);
+                DrawArc(doc2D, z4, y2, bindingRadius, 90, 180, 1);
+                DrawAxisLine(doc2D, z1, y1, z2, y2);
+
+                sketchDef.EndEdit();
+
+                return sketch;
+            }
+            else
+            {
+                ksEntity basePlane = _part.GetDefaultEntity(
+                    (short)Obj3dType.o3d_planeXOZ);
+                ksEntity offsetPlane = _part.NewEntity(
+                    (short)Obj3dType.o3d_planeOffset);
+                ksPlaneOffsetDefinition offsetDef = offsetPlane.GetDefinition();
+                offsetDef.SetPlane(basePlane);
+                offsetDef.offset = shankRadius;
+                offsetDef.direction = true;
+                offsetPlane.Create();
+
+                ksEntity sketch = _part.NewEntity((short)Obj3dType.o3d_sketch);
+                ksSketchDefinition sketchDef = sketch.GetDefinition();
+                sketchDef.SetPlane(offsetPlane);
+                sketch.Create();
+
+                ksDocument2D doc2D = sketchDef.BeginEdit();
+
+                double x1 = 0;
+                double z1 = shankLength1;
+                double x2 = x1;
+                double z2 = shankLength2;
+                double x3 = bindingRadius;
+                double z3 = arcPoint1;
+                double x4 = x3;
+                double z4 = arcPoint2;
+
+
+                DrawLineSeg(doc2D, x1, z1, x2, z2);
+                DrawArc(doc2D, x1, z3, bindingRadius, 0, 90, 1);
+                DrawLineSeg(doc2D, x3, z3, x4, z4);
+                DrawArc(doc2D, x2, z4, bindingRadius, 270, 0, 1);
+                DrawAxisLine(doc2D, x1, z1, x2, z2);
+
+                sketchDef.EndEdit();
+
+                return sketch;
+            }
+
+            
         }
 
         /// <summary>
