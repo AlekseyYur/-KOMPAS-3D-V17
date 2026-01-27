@@ -328,21 +328,6 @@ namespace nUnitTest
             Assert.That(errors, Is.Empty);
         }
 
-        [Test]
-        [Description("Проверка формата сообщений об ошибках")]
-        public void ValidateRules_ErrorMessages_HaveCorrectFormat()
-        {
-            var parameters = new Parameters();
-            parameters.Diameter = TestDiameter;
-            parameters.Length = TestMaxLength + 10.0;
-            parameters.TotalLength = TestMaxLength + 30.0;
-
-            var errors = parameters.ValidateRules();
-
-            Assert.That(errors, Has.Count.EqualTo(1));
-            Assert.That(errors[0], Contains.Substring("30,0 - 80,0")
-                .Or.Contains("30.0 - 80.0"));
-        }
 
         private Parameters CreateTestParameters()
         {

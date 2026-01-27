@@ -28,7 +28,7 @@ namespace Core.Model
         /// <summary>
         /// Формат отображения чисел с одним десятичным знаком.
         /// </summary>
-        private const string NumberFormat = "F1";
+        private const string NumberFormat = "F2";
 
         /// <summary>
         /// Конструктор класса ValidationField.
@@ -292,7 +292,7 @@ namespace Core.Model
         }
 
         /// <summary>
-        /// Унифицированный метод валидации и обновления параметра.
+        /// Унифицированный метод валидации и обновления параметров.
         /// </summary>
         /// <param name="input">Входное значение.</param>
         /// <param name="validationFunc">Функция валидации.</param>

@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wrapper", "Wrapper\Wrapper.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "nUnitTest", "nUnitTest\nUnitTest.csproj", "{1A9DF02A-FB35-4C0C-9361-579E68E05F85}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StressTest", "StressTest\StressTest.csproj", "{751B546B-5654-44C2-B79C-CE504B5BED4E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{1A9DF02A-FB35-4C0C-9361-579E68E05F85}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1A9DF02A-FB35-4C0C-9361-579E68E05F85}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1A9DF02A-FB35-4C0C-9361-579E68E05F85}.Release|Any CPU.Build.0 = Release|Any CPU
+		{751B546B-5654-44C2-B79C-CE504B5BED4E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{751B546B-5654-44C2-B79C-CE504B5BED4E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{751B546B-5654-44C2-B79C-CE504B5BED4E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{751B546B-5654-44C2-B79C-CE504B5BED4E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

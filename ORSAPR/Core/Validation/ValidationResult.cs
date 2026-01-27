@@ -27,7 +27,8 @@ namespace Core.Model
         /// <summary>
         /// Создает успешный результат валидации.
         /// </summary>
-        /// <param name="value">Успешно распарсенное числовое значение.</param>
+        /// <param name="value">Успешно распарсенное числовое
+        /// значение.</param>
         /// <returns>Экземпляр <see cref="ValidationResult"/> с флагом 
         /// IsValid = true и установленным значением.</returns>
         public static ValidationResult Success(double value)

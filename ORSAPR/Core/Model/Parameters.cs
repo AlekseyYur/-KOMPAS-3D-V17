@@ -129,9 +129,9 @@ namespace ORSAPR
         private double _maxShankLengthValue;
 
         /// <summary>
-        /// Формат отображения чисел с одним десятичным знаком.
+        /// Формат отображения чисел с двумя десятичными знаками.
         /// </summary>
-        private const string NumberFormat = "F1";
+        private const string NumberFormat = "F2";
 
         /// <summary>
         /// Первый коэфициент для вычисления зависимости 

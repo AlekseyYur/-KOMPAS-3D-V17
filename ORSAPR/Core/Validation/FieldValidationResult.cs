@@ -27,7 +27,8 @@ namespace Core.Validation
         /// </summary>
         /// <param name="fieldName">Название поля.</param>
         /// <param name="result">Результат валидации.</param>
-        public FieldValidationResult(string fieldName, ValidationResult result)
+        public FieldValidationResult(string fieldName,
+            ValidationResult result)
         {
             FieldName = fieldName;
             Result = result;

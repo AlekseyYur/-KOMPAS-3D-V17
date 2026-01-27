@@ -32,16 +32,8 @@ namespace ORSAPR
         private const double ConicSpiralDiamFactor = 6.5;
 
         /// <summary>
-        /// Получает активную деталь из текущего документа.
-        /// </summary>
-        /// <returns>Объект активной детали <see cref="ksPart"/>.</returns>
-        public ksPart GetPart()
-        {
-            return _part;
-        }
-
-        /// <summary>
-        /// Подключается к запущенному экземпляру КОМПАС-3D или запускает новый.
+        /// Подключается к запущенному экземпляру КОМПАС-3D
+        /// или запускает новый.
         /// </summary>
         /// <returns>
         /// <c>true</c> - если подключение к КОМПАС-3D выполнено успешно; 
@@ -67,7 +59,8 @@ namespace ORSAPR
                 {
                     var kompasType = Type.GetTypeFromProgID(
                         "KOMPAS.Application.5");
-                    _kompas = (KompasObject)Activator.CreateInstance(kompasType);
+                    _kompas = (KompasObject)Activator.CreateInstance(
+                        kompasType);
                 }
 
                 if (_kompas == null)
@@ -112,7 +105,8 @@ namespace ORSAPR
         /// </summary>
         /// <param name="plane">Тип плоскости для создания эскиза.</param>
         /// <returns>
-        /// Объект эскиза <see cref="ksEntity"/> или <c>null</c> в случае ошибки.
+        /// Объект эскиза <see cref="ksEntity"/> или <c>null</c> в случае
+        /// ошибки.
         /// </returns>
         public ksEntity CreateSketch(short plane)
         {
@@ -139,42 +133,45 @@ namespace ORSAPR
         /// </summary>
         /// <param name="sketch">Эскиз для редактирования.</param>
         /// <returns>
-        /// Объект 2D-документа <see cref="ksDocument2D"/> для рисования или 
-        /// <c>null</c> в случае ошибки.
+        /// Объект 2D-документа <see cref="ksDocument2D"/> для рисования
+        /// или <c>null</c> в случае ошибки.
         /// </returns>
         public ksDocument2D BeginSketchEdit(ksEntity sketch)
         {
             try
             {
-                var sketchDefinition = (ksSketchDefinition)sketch.GetDefinition();
+                var sketchDefinition =
+                    (ksSketchDefinition)sketch.GetDefinition();
                 return sketchDefinition.BeginEdit();
                 //TODO: ?? +
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Ошибка редактирования эскиза: {ex.Message}");
+                Console.WriteLine(
+                    $"Ошибка редактирования эскиза: {ex.Message}");
                 return null;
             }
-            
         }
 
         /// <summary>
         /// Завершает редактирование эскиза.
         /// </summary>
-        /// <param name="sketch">Эскиз, редактирование которого завершается.</param>
+        /// <param name="sketch">Эскиз, редактирование которого
+        /// завершается.</param>
         public void EndSketchEdit(ksEntity sketch)
         {
             try
             {
-                var sketchDefinition = (ksSketchDefinition)sketch.GetDefinition();
+                var sketchDefinition =
+                    (ksSketchDefinition)sketch.GetDefinition();
                 sketchDefinition.EndEdit();
                 //TODO: ?? +
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Ошибка завершения редактирования эскиза: {ex.Message}");
+                Console.WriteLine(
+                    $"Ошибка завершения редактирования эскиза: {ex.Message}");
             }
-           
         }
 
         /// <summary>
@@ -217,7 +214,8 @@ namespace ORSAPR
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Ошибка рисования осевой линии: {ex.Message}");
+                Console.WriteLine(
+                    $"Ошибка рисования осевой линии: {ex.Message}");
             }
         }
 
@@ -232,7 +230,7 @@ namespace ORSAPR
         /// <param name="startAngle">Начальный угол в градусах.</param>
         /// <param name="endAngle">Конечный угол в градусах.</param>
         /// <param name="style">Стиль линии.</param>
-        public void DrawArc(ksDocument2D doc2D, double centerX, 
+        public void DrawArc(ksDocument2D doc2D, double centerX,
             double centerY, double radius, double startAngle,
             double endAngle, int style = 1)
         {
@@ -246,7 +244,6 @@ namespace ORSAPR
                 Console.WriteLine($"Ошибка рисования дуги: {ex.Message}");
             }
         }
-
 
         /// <summary>
         /// Создает операцию вращения для формирования тела вращения.
@@ -295,7 +292,8 @@ namespace ORSAPR
         }
 
         /// <summary>
-        /// Создает цилиндрическую спираль для формирования спиральной канавки сверла.
+        /// Создает цилиндрическую спираль для формирования спиральной
+        /// канавки сверла.
         /// </summary>
         /// <param name="drillLength">Длина рабочей части сверла.</param>
         /// <param name="drillDiameter">Диаметр сверла.</param>
@@ -352,11 +350,13 @@ namespace ORSAPR
         /// <summary>
         /// Создаёт эскиз профиля креплений хвостовика.
         /// </summary>
-        /// <param name="length">Длина крепления.</param>
-        /// <param name="depth">Радиус хвостовика.</param>
+        /// <param name="shankLength1">Длина 1 крепления.</param>
+        /// <param name="shankLength2">Длина 2 крепления.</param>
+        /// <param name="shankRadius">Радиус хвостовика.</param>
         /// <param name="plane">Значение для определения оси.</param>
         /// <returns>Эскиз профиля крепления хвостовика.</returns>
-        public ksEntity CreateCircleGuide(double shankLength1, double shankLength2, double shankRadius, bool plane)
+        public ksEntity CreateCircleGuide(double shankLength1,
+            double shankLength2, double shankRadius, bool plane)
         {
             double bindingRadius = shankRadius / 2;
             double arcPoint1 = shankLength1 - bindingRadius;
@@ -368,15 +368,15 @@ namespace ORSAPR
                     (short)Obj3dType.o3d_planeYOZ);
                 ksEntity offsetPlane = _part.NewEntity(
                     (short)Obj3dType.o3d_planeOffset);
-                ksPlaneOffsetDefinition offsetDef = offsetPlane.GetDefinition();
+                ksPlaneOffsetDefinition offsetDef =
+                    offsetPlane.GetDefinition();
                 offsetDef.SetPlane(basePlane);
                 offsetDef.offset = shankRadius;
                 offsetDef.direction = true;
                 offsetPlane.Create();
 
-                
-
-                ksEntity sketch = _part.NewEntity((short)Obj3dType.o3d_sketch);
+                ksEntity sketch = _part.NewEntity(
+                    (short)Obj3dType.o3d_sketch);
                 ksSketchDefinition sketchDef = sketch.GetDefinition();
                 sketchDef.SetPlane(offsetPlane);
                 sketch.Create();
@@ -391,7 +391,6 @@ namespace ORSAPR
                 double y3 = bindingRadius;
                 double z4 = arcPoint2;
                 double y4 = y3;
-                
 
                 DrawLineSeg(doc2D, z1, y1, z2, y2);
                 DrawArc(doc2D, z3, y1, bindingRadius, 0, 90, 1);
@@ -409,13 +408,15 @@ namespace ORSAPR
                     (short)Obj3dType.o3d_planeXOZ);
                 ksEntity offsetPlane = _part.NewEntity(
                     (short)Obj3dType.o3d_planeOffset);
-                ksPlaneOffsetDefinition offsetDef = offsetPlane.GetDefinition();
+                ksPlaneOffsetDefinition offsetDef =
+                    offsetPlane.GetDefinition();
                 offsetDef.SetPlane(basePlane);
                 offsetDef.offset = shankRadius;
                 offsetDef.direction = true;
                 offsetPlane.Create();
 
-                ksEntity sketch = _part.NewEntity((short)Obj3dType.o3d_sketch);
+                ksEntity sketch = _part.NewEntity(
+                    (short)Obj3dType.o3d_sketch);
                 ksSketchDefinition sketchDef = sketch.GetDefinition();
                 sketchDef.SetPlane(offsetPlane);
                 sketch.Create();
@@ -431,7 +432,6 @@ namespace ORSAPR
                 double x4 = x3;
                 double z4 = arcPoint2;
 
-
                 DrawLineSeg(doc2D, x1, z1, x2, z2);
                 DrawArc(doc2D, x1, z3, bindingRadius, 0, 90, 1);
                 DrawLineSeg(doc2D, x3, z3, x4, z4);
@@ -442,8 +442,6 @@ namespace ORSAPR
 
                 return sketch;
             }
-
-            
         }
 
         /// <summary>
@@ -475,7 +473,8 @@ namespace ORSAPR
 
             ksDocument2D doc2D = sketchDef.BeginEdit();
 
-            long circleHandle = doc2D.ksCircle(radius, 0, radius * depth, 1);
+            long circleHandle = doc2D.ksCircle(
+                radius, 0, radius * depth, 1);
 
             sketchDef.EndEdit();
 
@@ -483,7 +482,8 @@ namespace ORSAPR
         }
 
         /// <summary>
-        /// Создает спиральную канавку методом эволюции по спиральной траектории.
+        /// Создает спиральную канавку методом эволюции по спиральной
+        /// траектории.
         /// </summary>
         /// <param name="fluteProfile">Эскиз профиля канавки.</param>
         /// <param name="spiralPath">Спиральная траектория для эволюции.</param>
@@ -496,7 +496,8 @@ namespace ORSAPR
         {
             ksEntity cutEvolution = _part.NewEntity(
                 (short)Obj3dType.o3d_cutEvolution);
-            ksCutEvolutionDefinition cutEvolutionDef = cutEvolution.GetDefinition();
+            ksCutEvolutionDefinition cutEvolutionDef =
+                cutEvolution.GetDefinition();
 
             cutEvolutionDef.SetSketch(fluteProfile);
 
@@ -535,7 +536,8 @@ namespace ORSAPR
                 (short)Obj3dType.o3d_axisOZ);
             copyDefinition.SetAxis(axisOz);
 
-            ksEntityCollection entityCollection = copyDefinition.GetOperationArray();
+            ksEntityCollection entityCollection =
+                copyDefinition.GetOperationArray();
             entityCollection.Clear();
             entityCollection.Add(elementToCopy);
 

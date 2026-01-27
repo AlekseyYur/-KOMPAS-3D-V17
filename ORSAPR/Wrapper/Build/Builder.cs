@@ -85,7 +85,10 @@ namespace ORSAPR
                 CreateSpiralFlutes(parameters);
                 CreateConicalFlutes(parameters);
                 CreateDrillPoint(parameters);
-                CreateShankBracing(parameters);
+                if (parameters.ClearanceShank)
+                {
+                    CreateShankBracing(parameters);
+                }
 
                 return true;
             }
