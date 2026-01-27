@@ -2,113 +2,154 @@
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.Runtime.InteropServices;
+using Microsoft.VisualBasic.Devices;
 using ORSAPR;
 
 namespace ORSAPR.StressTest
 {
     /// <summary>
-    /// Программа для стресс-тестирования построителя модели сверла
+    /// Программа для нагрузочного тестирования построителя модели сверла
     /// </summary>
     class Program
     {
+        [DllImport("kernel32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        static extern bool GetPhysicallyInstalledSystemMemory(
+            out long TotalMemoryInKilobytes);
+
+        /// <summary>
+        /// Коэффициент преобразования байтов в гигабайты
+        /// </summary>
+        private const double GigabyteInByte = 1.0 / 1073741824.0;
+
+        /// <summary>
+        /// Коэффициент преобразования килобайтов в гигабайты
+        /// </summary>
+        private const double KbToGb = 1.0 / 1048576.0;
+
         /// <summary>
         /// Точка входа в программу
         /// </summary>
         static void Main()
         {
-            // Устанавливаем инвариантную культуру для консистентности
-            CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
-            CultureInfo.CurrentUICulture = CultureInfo.InvariantCulture;
+            CultureInfo.CurrentCulture =
+                CultureInfo.InvariantCulture;
+            CultureInfo.CurrentUICulture =
+                CultureInfo.InvariantCulture;
 
-            var builder = new ORSAPR.Builder(); // Полное имя класса
+            var builder = new ORSAPR.Builder();
             var parameters = CreateTestParameters();
 
-            // Определяем путь для лог-файла
-            var logPath = "stress_test_log.txt";
+            var logPath = "log.txt";
             var fullLogPath = Path.GetFullPath(logPath);
 
             Console.WriteLine($"Логирование в файл: {fullLogPath}");
-            Console.WriteLine($"Начало стресс-тестирования...\n");
+            Console.WriteLine($"Начало нагрузочного тестирования...");
+            Console.WriteLine($"Для остановки нажмите Ctrl+C\n");
 
             var stopWatch = new Stopwatch();
+            var currentProcess = Process.GetCurrentProcess();
+            var computerInfo = new ComputerInfo();
+
             using (var streamWriter = new StreamWriter(logPath))
             {
-                // Заголовок лога
-                streamWriter.WriteLine("№\tВремя(мс)\tПамять(МБ)\tСтатус");
-                streamWriter.Flush();
-
                 int count = 0;
-                const int maxIterations = 2; // Ограничиваем количество итераций для теста
-
-                // Получаем информацию о текущем процессе
-                var currentProcess = Process.GetCurrentProcess();
                 var startTime = DateTime.Now;
 
                 try
                 {
-                    for (int i = 0; i < maxIterations; i++)
+                    // Бесконечный цикл для нагрузочного тестирования
+                    while (true)
                     {
                         count++;
+
+                        // Замер времени построения
                         stopWatch.Restart();
+                        bool success = builder.Build(parameters);
+                        stopWatch.Stop();
 
-                        try
+                        if (!success)
                         {
-                            // Вызываем построение модели
-                            bool success = builder.Build(parameters);
-
-                            stopWatch.Stop();
-
-                            // Получаем использование памяти
-                            double usedMemoryMB = currentProcess.PrivateMemorySize64 / (1024.0 * 1024.0);
-
-                            streamWriter.WriteLine(
-                                $"{count}\t" +
-                                $"{stopWatch.ElapsedMilliseconds}\t" +
-                                $"{usedMemoryMB:F2}\t" +
-                                $"{(success ? "Успех" : "Ошибка")}"
-                            );
-                            streamWriter.Flush();
-
-                            Console.WriteLine($"Итерация {count}: " +
-                                $"{stopWatch.ElapsedMilliseconds} мс, " +
-                                $"{usedMemoryMB:F2} МБ, " +
-                                $"{(success ? "Успех" : "Ошибка")}");
-
-                            // Небольшая пауза для имитации реального использования
-                            System.Threading.Thread.Sleep(100);
+                            Console.WriteLine(
+                                $"Ошибка при построении модели {count}");
+                            continue;
                         }
-                        catch (Exception ex)
-                        {
-                            stopWatch.Stop();
-                            streamWriter.WriteLine(
-                                $"{count}\t" +
-                                $"{stopWatch.ElapsedMilliseconds}\t" +
-                                $"N/A\t" +
-                                $"Исключение: {ex.Message}"
-                            );
-                            streamWriter.Flush();
-                            Console.WriteLine($"Ошибка на итерации {count}: {ex.Message}");
-                        }
+
+                        // Замер общей используемой памяти в системе (в ГБ)
+                        double usedMemoryGB =
+                            (computerInfo.TotalPhysicalMemory
+                            - computerInfo.AvailablePhysicalMemory)
+                            * GigabyteInByte;
+
+                        // Запись в лог в формате: 
+                        // номер_модели время_построения память_ГБ
+                        streamWriter.WriteLine(
+                            $"{count}\t" +
+                            $"{stopWatch.Elapsed:hh\\:mm\\:ss}\t" +
+                            $"{usedMemoryGB:F9}");
+                        streamWriter.Flush();
+
+                        Console.WriteLine($"Модель {count}: " +
+                                $"Время = {stopWatch.Elapsed:hh\\:mm\\:ss}, " +
+                                $"ОЗУ = {usedMemoryGB:F2} ГБ");
+
+                        stopWatch.Reset();
                     }
+                }
+                catch (System.Threading.ThreadInterruptedException)
+                {
+                    // Прерывание по Ctrl+C
+                    Console.WriteLine(
+                        "\nТестирование прервано пользователем.");
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Критическая ошибка: {ex.Message}");
+                    Console.WriteLine($"\nКритическая ошибка: {ex.Message}");
                 }
                 finally
                 {
                     var totalTime = DateTime.Now - startTime;
-                    Console.WriteLine($"\nТест завершен.");
-                    Console.WriteLine($"Всего итераций: {count}");
-                    Console.WriteLine($"Общее время: {totalTime:mm\\:ss}");
-                    Console.WriteLine($"Лог сохранен в: {fullLogPath}");
+
+                    // Вывод общей информации о системе
+                    try
+                    {
+                        if (GetPhysicallyInstalledSystemMemory(
+                            out long totalMemoryKB))
+                        {
+                            double totalMemoryGB =
+                                totalMemoryKB * KbToGb;
+                            Console.WriteLine(
+                                $"Установленная ОЗУ: {totalMemoryGB:F1} ГБ");
+                        }
+                    }
+                    catch
+                    {
+                        // Игнорируем ошибки получения информации о памяти
+                    }
+
+                    Console.WriteLine(
+                        $"\nРезультаты нагрузочного тестирования:");
+                    Console.WriteLine($"Всего построено моделей: {count}");
+                    Console.WriteLine(
+                        $"Общее время тестирования: {totalTime:hh\\:mm\\:ss}");
+                    Console.WriteLine($"Данные сохранены в: {fullLogPath}");
+                    Console.WriteLine($"\nФормат данных в лог-файле:");
+                    Console.WriteLine($"Столбец 1: Номер созданной модели");
+                    Console.WriteLine($"Столбец 2: Время построения");
+                    Console.WriteLine($"Столбец 3: Используемая память (ГБ)");
+
+                    // Пример строки лога
+                    Console.WriteLine(
+                        $"\nПример строки лога: \"1\t00:00:02\t8.92043264\"");
                 }
             }
         }
 
         /// <summary>
-        /// Создает тестовые параметры для стресс-тестирования
+        /// Создает тестовые параметры для нагрузочного тестирования
         /// </summary>
+        /// <returns>Параметры со средними значениями</returns>
         private static Parameters CreateTestParameters()
         {
             return new Parameters
