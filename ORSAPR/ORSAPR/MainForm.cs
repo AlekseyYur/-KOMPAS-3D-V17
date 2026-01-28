@@ -1,5 +1,4 @@
-﻿using Core.Model;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -30,17 +29,12 @@ namespace ORSAPR
         private Parameters _parameters;
 
         /// <summary>
-        /// Объект класса ValidationField.
-        /// </summary>
-        private ValidationField _validator;
-
-        /// <summary>
         /// Список пресетов параметров сверла.
         /// </summary>
         private readonly List<DrillPreset> _presets;
 
         /// <summary>
-        /// Флаг указывающий, что происходит применение пресета
+        /// Флаг указывающий, что происходит применение пресета.
         /// </summary>
         private bool _isApplyingPreset = false;
 
@@ -50,106 +44,34 @@ namespace ORSAPR
         private const string NumberFormat = "F2";
 
         /// <summary>
-        /// Словарь для сопоставления текстовых полей с функциями валидации.
-        /// </summary>
-        private Dictionary<TextBox, Func<ValidationResult>> _validationMap;
-
-        /// <summary>
-        /// Инициализирует новый экземпляр класса <see cref="MainForm"/>.
+        /// Инициализирует новый экземпляр класса MainForm.
         /// </summary>
         public MainForm()
         {
             InitializeComponent();
-
             _parameters = new Parameters();
-            _validator = new ValidationField(_parameters);
             _builder = new Builder();
-
             _presets = CreatePresets();
             SetupPresetsComboBox();
-            InitializeParameters();
-            InitializeValidationMap();
-            InitilizeEventHandlers();
+            InitializeUI();
+            InitializeEventHandlers();
         }
 
         /// <summary>
-        /// Инициализирует параметры сверла значениями по умолчанию.
+        /// Инициализирует пользовательский интерфейс.
         /// </summary>
-        private void InitializeParameters()
+        private void InitializeUI()
         {
-            // Установка начальных значений из уже рассчитанных параметров
-            TextDiameter.Text = _parameters.Diameter.ToString(
-                NumberFormat, CultureInfo.CurrentCulture);
-            TextLength.Text = _parameters.Length.ToString(
-                NumberFormat, CultureInfo.CurrentCulture);
-            TextTotalLength.Text = _parameters.TotalLength.ToString(
-                NumberFormat, CultureInfo.CurrentCulture);
-            TextAngle.Text = _parameters.Angle.ToString(
-                NumberFormat, CultureInfo.CurrentCulture);
-            TextConeValue.Text = _parameters.ConeValue.ToString(
-                NumberFormat, CultureInfo.CurrentCulture);
-            CheckClearanceCone.Checked = _parameters.ClearanceCone;
-            TextShankDiameterValue.Text =
-                _parameters.ShankDiameterValue.ToString(
-                NumberFormat, CultureInfo.CurrentCulture);
-            TextShankLengthValue.Text =
-                _parameters.ShankLengthValue.ToString(
-                NumberFormat, CultureInfo.CurrentCulture);
-            CheckClearanceShank.Checked = _parameters.ClearanceShank;
-
+            UpdateFormFromParameters();
+            UpdateRangeLabels();
             UpdateVisibility();
-            UpdateRanges();
             ResetFieldColors();
-        }
-
-        /// <summary>
-        /// Инициализирует словарь для сопоставления текстовых полей 
-        /// с функциями валидации.
-        /// </summary>
-        private void InitializeValidationMap()
-        {
-            _validationMap = new Dictionary<TextBox, Func<ValidationResult>>
-            {
-                {
-                    TextDiameter,
-                    () => _validator.ValidateDiameter(TextDiameter.Text)
-                },
-                {
-                    TextLength,
-                    () => _validator.ValidateLength(TextLength.Text)
-                },
-                {
-                    TextTotalLength,
-                    () => _validator.ValidateTotalLength(TextTotalLength.Text)
-                },
-                {
-                    TextAngle,
-                    () => _validator.ValidateAngle(TextAngle.Text)
-                },
-                {
-                    TextConeValue,
-                    () => _validator.ValidateConeValue(
-                        TextConeValue.Text, CheckClearanceCone.Checked)
-                },
-                {
-                    TextShankDiameterValue,
-                    () => _validator.ValidateShankDiameterValue(
-                        TextShankDiameterValue.Text,
-                        CheckClearanceShank.Checked)
-                },
-                {
-                    TextShankLengthValue,
-                    () => _validator.ValidateShankLengthValue(
-                        TextShankLengthValue.Text,
-                        CheckClearanceShank.Checked)
-                }
-            };
         }
 
         /// <summary>
         /// Инициализирует обработчики событий для элементов управления.
         /// </summary>
-        private void InitilizeEventHandlers()
+        private void InitializeEventHandlers()
         {
             TextDiameter.TextChanged += TextBoxTextChanged;
             TextLength.TextChanged += TextBoxTextChanged;
@@ -165,257 +87,57 @@ namespace ORSAPR
         }
 
         /// <summary>
-        /// Создает список предустановок
+        /// Обновляет форму из текущих параметров.
         /// </summary>
-        private List<DrillPreset> CreatePresets()
+        private void UpdateFormFromParameters()
         {
-            return new List<DrillPreset>
-            {
-                // Средние значения.
-            new DrillPreset("Сверло Ø10", 10, 55, 140, 45),
-            // Максимальные значения.
-            new DrillPreset("Сверло Ø20мм", 20, 160, 205, 60),
-            // Минимальные значения
-            new DrillPreset("Сверло Ø1мм", 1, 3, 23, 30),
-            new DrillPreset("Сверло Ø10мм с конусом", 10, 55, 140, 45,
-                           hasCone: true, coneValue: 5),
-            new DrillPreset("Сверло Ø20мм с конусом", 20, 160, 205, 60,
-                           hasCone: true, coneValue: 15),
-            new DrillPreset("Сверло Ø1мм с конусом", 1, 3, 23, 30,
-                           hasCone: true, coneValue: 0.25),
-            new DrillPreset("Сверло Ø10мм с хвостовиком", 10, 55, 140, 45,
-                           hasShank: true, shankDiameter: 18.75,
-                           shankLength: 212.5),
-            new DrillPreset("Сверло Ø20мм с хвостовиком", 20, 160, 205, 60,
-                           hasShank: true, shankDiameter: 40,
-                           shankLength: 135),
-            new DrillPreset("Сверло Ø1мм с хвостовиком", 1, 3, 23, 30,
-                           hasShank: true, shankDiameter: 1.75,
-                           shankLength: 40),
-            new DrillPreset("Пользовательский", 10, 55, 88, 45)
-            };
+            TextDiameter.Text = _parameters.Diameter.ToString(NumberFormat);
+            TextLength.Text = _parameters.Length.ToString(NumberFormat);
+            TextTotalLength.Text = _parameters.TotalLength.ToString(
+                NumberFormat);
+            TextAngle.Text = _parameters.Angle.ToString(NumberFormat);
+            CheckClearanceCone.Checked = _parameters.ClearanceCone;
+            TextConeValue.Text = _parameters.ConeValue.ToString(NumberFormat);
+            CheckClearanceShank.Checked = _parameters.ClearanceShank;
+            TextShankDiameterValue.Text = _parameters.ShankDiameterValue
+                .ToString(NumberFormat);
+            TextShankLengthValue.Text = _parameters.ShankLengthValue
+                .ToString(NumberFormat);
         }
 
         /// <summary>
-        /// Настраивает ComboBox с пресетами
+        /// Обновляет метки диапазонов на форме.
         /// </summary>
-        private void SetupPresetsComboBox()
+        private void UpdateRangeLabels()
         {
-            ComboBoxPresets.DataSource = _presets;
-            ComboBoxPresets.SelectedIndex = _presets.Count - 1;
-            // Последний - пользовательский
+            LabelLengthRange.Text = FormatRangeLabel(
+                _parameters.MinLength, _parameters.MaxLength, "мм");
+            LabelTotalLengthRange.Text = FormatRangeLabel(
+                _parameters.MinTotalLength, _parameters.MaxTotalLength, "мм");
+            LabelDiameterRange.Text = FormatRangeLabel(
+                _parameters.MinDiameter, _parameters.MaxDiameter, "мм");
+            LabelAngleRange.Text = FormatRangeLabel(
+                _parameters.MinAngle, _parameters.MaxAngle, "°");
+            LabelConeValueRange.Text = FormatRangeLabel(
+                _parameters.MinConeValue, _parameters.MaxConeValue, "мм");
+            LabelShankDiameterValueRange.Text = FormatRangeLabel(
+                _parameters.MinShankDiameterValue,
+                _parameters.MaxShankDiameterValue, "мм");
+            LabelShankLengthValueRange.Text = FormatRangeLabel(
+                _parameters.MinShankLengthValue,
+                _parameters.MaxShankLengthValue, "мм");
         }
 
         /// <summary>
-        /// Применяет выбранный пресет к интерфейсу
+        /// Форматирует метку диапазона.
         /// </summary>
-        private void ApplyPreset(DrillPreset preset)
+        private string FormatRangeLabel(double min, double max, string unit)
         {
-            // Временное отключение обработчика событий
-            ToggleEventHandlers(false);
-
-            // Установка значений
-            TextDiameter.Text = preset.Diameter.ToString(NumberFormat);
-            TextLength.Text = preset.Length.ToString(NumberFormat);
-            TextTotalLength.Text = preset.TotalLength.ToString(NumberFormat);
-            TextAngle.Text = preset.Angle.ToString(NumberFormat);
-
-            CheckClearanceCone.Checked = preset.HasCone;
-            TextConeValue.Text = preset.ConeValue.ToString(NumberFormat);
-
-            CheckClearanceShank.Checked = preset.HasShank;
-            TextShankDiameterValue.Text = preset.ShankDiameter.ToString(NumberFormat);
-            TextShankLengthValue.Text = preset.ShankLength.ToString(NumberFormat);
-
-            // Обновление параметров
-            _validator.TryUpdateParameters(
-                TextDiameter.Text, TextLength.Text, TextTotalLength.Text,
-                TextAngle.Text, TextConeValue.Text, preset.HasCone,
-                TextShankDiameterValue.Text, TextShankLengthValue.Text,
-                preset.HasShank, out _
-            );
-
-            UpdateRanges();
-
-            // Включаем обработчики обратно
-            ToggleEventHandlers(true);
+            return $"{min:F2} — {max:F2} {unit}";
         }
 
         /// <summary>
-        /// Переключает на пользовательский пресет при изменении параметров
-        /// </summary>
-        private void SwitchToCustomPreset()
-        {
-            // Не переключаем если применяем пресет
-            if (_isApplyingPreset) return;
-
-            int customIndex = _presets.FindIndex(p => 
-            p.Name == "Пользовательский");
-            if (customIndex >= 0 && ComboBoxPresets.SelectedIndex
-                != customIndex)
-            {
-                ComboBoxPresets.SelectedIndex = customIndex;
-            }
-        }
-
-        /// <summary>
-        /// Обработчик событий ComboBox
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void ComboBoxPresetsSelectedIndexChanged(object sender,
-            EventArgs e)
-        {
-
-            // Временно отключаем SwitchToCustomPreset
-            _isApplyingPreset = true;
-
-            try
-            {
-                if (ComboBoxPresets.SelectedItem is DrillPreset preset)
-                {
-                    ApplyPreset(preset);
-                }
-            }
-            finally
-            {
-                _isApplyingPreset = false;
-            }
-        }
-
-        /// <summary>
-        /// Включает/выключает обработчики событий для избежания рекурсии
-        /// </summary>
-        private void ToggleEventHandlers(bool enable)
-        {
-            if (enable)
-            {
-                InitilizeEventHandlers();
-            }
-            else
-            {
-                TextDiameter.TextChanged -= TextBoxTextChanged;
-                TextLength.TextChanged -= TextBoxTextChanged;
-                TextTotalLength.TextChanged -= TextBoxTextChanged;
-                TextAngle.TextChanged -= TextBoxTextChanged;
-                TextConeValue.TextChanged -= TextBoxTextChanged;
-                TextShankDiameterValue.TextChanged -= TextBoxTextChanged;
-                TextShankLengthValue.TextChanged -= TextBoxTextChanged;
-                CheckClearanceCone.CheckedChanged -= 
-                    CheckClearanceConeCheckedChanged;
-                CheckClearanceShank.CheckedChanged -=
-                    CheckClearanceShankCheckedChanged;
-            }
-        }
-
-        /// <summary>
-        /// Обработчик изменения текста в текстовых полях.
-        /// </summary>
-        /// <param name="sender">Источник события.</param>
-        /// <param name="e">Данные события.</param>
-        private void TextBoxTextChanged(object sender, EventArgs e)
-        {
-            SwitchToCustomPreset();
-
-            var textBox = sender as TextBox;
-
-            if (textBox == null || _validationMap == null) return;
-
-            if (_validationMap.TryGetValue(textBox, out var validateFunc))
-            {
-                ValidationResult result = validateFunc();
-                UpdateTextBoxAppearance(textBox, result);
-
-                // Обновляем ключевые параметры, влияющие на диапазоны
-                UpdateKeyParametersFromUI();
-            }
-
-            UpdateRanges();
-        }
-
-        /// <summary>
-        /// Обновляет ключевые параметры из UI.
-        /// </summary>
-        private void UpdateKeyParametersFromUI()
-        {
-            // Обновляем только параметры, влияющие на диапазоны
-            if (double.TryParse(TextDiameter.Text, out double diameter))
-            {
-                _parameters.Diameter = diameter;
-            }
-
-            if (double.TryParse(TextLength.Text, out double length))
-            {
-                _parameters.Length = length;
-            }
-
-            if (double.TryParse(TextTotalLength.Text, out double totalLength))
-            {
-                _parameters.TotalLength = totalLength;
-            }
-        }
-
-        /// <summary>
-        /// Обновляет внешний вид текстового поля на основе результата
-        /// валидации.
-        /// </summary>
-        /// <param name="textBox">Текстовое поле для обновления.</param>
-        /// <param name="result">Результат валидации.</param>
-        private void UpdateTextBoxAppearance(TextBox textBox,
-            ValidationResult result)
-        {
-            textBox.BackColor = result.IsValid ?
-                SystemColors.Window : Color.LightPink;
-        }
-
-        /// <summary>
-        /// Обновляет отображение диапазонов допустимых значений в интерфейсе.
-        /// </summary>
-        private void UpdateRanges()
-        {
-            var culture = CultureInfo.CurrentCulture;
-
-            LabelLengthRange.Text =
-                $"{_parameters.MinLength.ToString(NumberFormat, culture)}-" +
-                $"{_parameters.MaxLength.ToString(NumberFormat, culture)} мм";
-            LabelTotalLengthRange.Text =
-                $"{_parameters.MinTotalLength.ToString(NumberFormat, culture)}-" +
-                $"{_parameters.MaxTotalLength.ToString(NumberFormat, culture)} мм";
-            LabelDiameterRange.Text =
-                $"{_parameters.MinDiameter.ToString(NumberFormat, culture)}-" +
-                $"{_parameters.MaxDiameter.ToString(NumberFormat, culture)} мм";
-            LabelAngleRange.Text =
-                $"{_parameters.MinAngle.ToString(NumberFormat, culture)}-" +
-                $"{_parameters.MaxAngle.ToString(NumberFormat, culture)}°";
-            LabelConeValueRange.Text =
-                $"{_parameters.MinConeValue.ToString(NumberFormat, culture)}-" +
-                $"{_parameters.MaxConeValue.ToString(NumberFormat, culture)} мм";
-            LabelShankDiameterValueRange.Text =
-                $"{_parameters.MinShankDiameterValue.ToString(NumberFormat, culture)}-" +
-                $"{_parameters.MaxShankDiameterValue.ToString(NumberFormat, culture)} мм";
-            LabelShankLengthValueRange.Text =
-                $"{_parameters.MinShankLengthValue.ToString(NumberFormat, culture)}-" +
-                $"{_parameters.MaxShankLengthValue.ToString(NumberFormat, culture)} мм";
-        }
-
-        /// <summary>
-        /// Сбрасывает цвета фона всех полей ввода к значениям по умолчанию.
-        /// </summary>
-        private void ResetFieldColors()
-        {
-            // Убираем цвет, установленный в конструкторе
-            TextDiameter.BackColor = SystemColors.Window;
-            TextLength.BackColor = SystemColors.Window;
-            TextTotalLength.BackColor = SystemColors.Window;
-            TextAngle.BackColor = SystemColors.Window;
-            TextConeValue.BackColor = SystemColors.Window;
-            TextShankDiameterValue.BackColor = SystemColors.Window;
-            TextShankLengthValue.BackColor = SystemColors.Window;
-        }
-
-        /// <summary>
-        /// Обновляет видимость элементов интерфейса, связанных с 
-        /// обратным конусом и хвостовиком.
+        /// Обновляет видимость элементов интерфейса.
         /// </summary>
         private void UpdateVisibility()
         {
@@ -442,12 +164,302 @@ namespace ORSAPR
         }
 
         /// <summary>
-        /// Обработчик события изменения состояния чекбокса 
-        /// "Наличие обратного конуса".
+        /// Сбрасывает цвета полей ввода.
         /// </summary>
-        /// <param name="sender">Источник события.</param>
-        /// <param name="e">Данные события.</param>
-        private void CheckClearanceConeCheckedChanged(object sender, EventArgs e)
+        private void ResetFieldColors()
+        {
+            ResetTextBoxColor(TextDiameter);
+            ResetTextBoxColor(TextLength);
+            ResetTextBoxColor(TextTotalLength);
+            ResetTextBoxColor(TextAngle);
+            ResetTextBoxColor(TextConeValue);
+            ResetTextBoxColor(TextShankDiameterValue);
+            ResetTextBoxColor(TextShankLengthValue);
+        }
+
+        /// <summary>
+        /// Сбрасывает цвет текстового поля.
+        /// </summary>
+        private void ResetTextBoxColor(TextBox textBox)
+        {
+            textBox.BackColor = SystemColors.Window;
+        }
+
+        /// <summary>
+        /// Создает список предустановок.
+        /// </summary>
+        private List<DrillPreset> CreatePresets()
+        {
+            return new List<DrillPreset>
+            {
+                new DrillPreset("Сверло Ø10", 10, 55, 140, 45),
+                new DrillPreset("Сверло Ø20мм", 20, 160, 205, 60),
+                new DrillPreset("Сверло Ø1мм", 1, 3, 23, 30),
+                new DrillPreset("Сверло Ø10мм с конусом", 10, 55, 140, 45,
+                    hasCone: true, coneValue: 5),
+                new DrillPreset("Сверло Ø20мм с конусом", 20, 160, 205, 60,
+                    hasCone: true, coneValue: 15),
+                new DrillPreset("Сверло Ø1мм с конусом", 1, 3, 23, 30,
+                    hasCone: true, coneValue: 0.25),
+                new DrillPreset("Сверло Ø10мм с хвостовиком", 10, 55, 140, 45,
+                    hasShank: true, shankDiameter: 18.75,
+                    shankLength: 212.5),
+                new DrillPreset("Сверло Ø20мм с хвостовиком", 20, 160, 205, 60,
+                    hasShank: true, shankDiameter: 40,
+                    shankLength: 135),
+                new DrillPreset("Сверло Ø1мм с хвостовиком", 1, 3, 23, 30,
+                    hasShank: true, shankDiameter: 1.75,
+                    shankLength: 40),
+                new DrillPreset("Пользовательский", 10, 55, 88, 45)
+            };
+        }
+
+        /// <summary>
+        /// Настраивает ComboBox с пресетами.
+        /// </summary>
+        private void SetupPresetsComboBox()
+        {
+            ComboBoxPresets.DataSource = _presets;
+            ComboBoxPresets.SelectedIndex = _presets.Count - 1;
+        }
+
+        /// <summary>
+        /// Применяет выбранный пресет к интерфейсу.
+        /// </summary>
+        private void ApplyPreset(DrillPreset preset)
+        {
+            ToggleEventHandlers(false);
+
+            // Установка значений
+            TextDiameter.Text = preset.Diameter.ToString(NumberFormat);
+            TextLength.Text = preset.Length.ToString(NumberFormat);
+            TextTotalLength.Text = preset.TotalLength.ToString(NumberFormat);
+            TextAngle.Text = preset.Angle.ToString(NumberFormat);
+
+            CheckClearanceCone.Checked = preset.HasCone;
+            TextConeValue.Text = preset.ConeValue.ToString(NumberFormat);
+
+            CheckClearanceShank.Checked = preset.HasShank;
+            TextShankDiameterValue.Text = preset.ShankDiameter.ToString(
+                NumberFormat);
+            TextShankLengthValue.Text = preset.ShankLength.ToString(
+                NumberFormat);
+
+            // Обновляем параметры из UI
+            UpdateParametersFromForm();
+
+            UpdateRangeLabels();
+
+            ToggleEventHandlers(true);
+        }
+
+        /// <summary>
+        /// Переключает на пользовательский пресет при изменении параметров.
+        /// </summary>
+        private void SwitchToCustomPreset()
+        {
+            if (_isApplyingPreset) return;
+
+            int customIndex = _presets.FindIndex(p =>
+                p.Name == "Пользовательский");
+            if (customIndex >= 0 &&
+                ComboBoxPresets.SelectedIndex != customIndex)
+            {
+                ComboBoxPresets.SelectedIndex = customIndex;
+            }
+        }
+
+        /// <summary>
+        /// Обрабатывает выбор пресета.
+        /// </summary>
+        private void ComboBoxPresetsSelectedIndexChanged(object sender,
+            EventArgs e)
+        {
+            _isApplyingPreset = true;
+
+            try
+            {
+                if (ComboBoxPresets.SelectedItem is DrillPreset preset)
+                {
+                    ApplyPreset(preset);
+                }
+            }
+            finally
+            {
+                _isApplyingPreset = false;
+            }
+        }
+
+        /// <summary>
+        /// Включает/выключает обработчики событий для избежания рекурсии.
+        /// </summary>
+        private void ToggleEventHandlers(bool enable)
+        {
+            if (enable)
+            {
+                InitializeEventHandlers();
+            }
+            else
+            {
+                TextDiameter.TextChanged -= TextBoxTextChanged;
+                TextLength.TextChanged -= TextBoxTextChanged;
+                TextTotalLength.TextChanged -= TextBoxTextChanged;
+                TextAngle.TextChanged -= TextBoxTextChanged;
+                TextConeValue.TextChanged -= TextBoxTextChanged;
+                TextShankDiameterValue.TextChanged -= TextBoxTextChanged;
+                TextShankLengthValue.TextChanged -= TextBoxTextChanged;
+                CheckClearanceCone.CheckedChanged -=
+                    CheckClearanceConeCheckedChanged;
+                CheckClearanceShank.CheckedChanged -=
+                    CheckClearanceShankCheckedChanged;
+            }
+        }
+
+        /// <summary>
+        /// Обрабатывает изменение текста в текстовых полях.
+        /// </summary>
+        private void TextBoxTextChanged(object sender, EventArgs e)
+        {
+            SwitchToCustomPreset();
+
+            var textBox = sender as TextBox;
+            if (textBox == null) return;
+
+            ValidateAndUpdateTextField(textBox);
+            UpdateDependentFields(textBox);
+            UpdateRangeLabels(); // Добавляем обновление меток
+        }
+
+        /// <summary>
+        /// Обновляет все зависимые поля после изменения ключевого параметра.
+        /// </summary>
+        private void UpdateDependentFields(TextBox changedTextBox)
+        {
+            if (changedTextBox == TextDiameter)
+            {
+                // Diameter влияет на Length, TotalLength, ConeValue,
+                // ShankDiameterValue, ShankLengthValue
+                ValidateAndUpdateTextField(TextLength);
+                ValidateAndUpdateTextField(TextTotalLength);
+                ValidateAndUpdateTextField(TextConeValue);
+                ValidateAndUpdateTextField(TextShankDiameterValue);
+                ValidateAndUpdateTextField(TextShankLengthValue);
+            }
+            else if (changedTextBox == TextLength)
+            {
+                // Length влияет на TotalLength и ShankLengthValue
+                ValidateAndUpdateTextField(TextTotalLength);
+                ValidateAndUpdateTextField(TextShankLengthValue);
+            }
+            else if (changedTextBox == TextTotalLength)
+            {
+                // TotalLength влияет на ShankLengthValue
+                ValidateAndUpdateTextField(TextShankLengthValue);
+            }
+        }
+
+        /// <summary>
+        /// Валидирует и обновляет текстовое поле.
+        /// </summary>
+        private void ValidateAndUpdateTextField(TextBox textBox)
+        {
+            var fieldName = GetFieldName(textBox);
+            var result = Parameters.TryParseDouble(textBox.Text, fieldName);
+
+            bool isValid = result.success && ValidateRange(textBox, result.value);
+
+            textBox.BackColor = isValid ?
+                SystemColors.Window : Color.LightPink;
+
+            if (isValid)
+            {
+                UpdateParameterFromTextBox(textBox, result.value);
+                UpdateRangeLabels();
+            }
+        }
+
+        /// <summary>
+        /// Проверяет диапазон значения.
+        /// </summary>
+        private bool ValidateRange(TextBox textBox, double value)
+        {
+            if (textBox == TextDiameter)
+            {
+                return value >= _parameters.MinDiameter &&
+                       value <= _parameters.MaxDiameter;
+            }
+            if (textBox == TextLength)
+            {
+                return value >= _parameters.MinLength &&
+                       value <= _parameters.MaxLength;
+            }
+            if (textBox == TextTotalLength)
+            {
+                return value >= _parameters.MinTotalLength &&
+                       value <= _parameters.MaxTotalLength;
+            }
+            if (textBox == TextAngle)
+            {
+                return value >= _parameters.MinAngle &&
+                       value <= _parameters.MaxAngle;
+            }
+            if (textBox == TextConeValue && CheckClearanceCone.Checked)
+            {
+                return value >= _parameters.MinConeValue &&
+                       value <= _parameters.MaxConeValue;
+            }
+            if (textBox == TextShankDiameterValue &&
+                CheckClearanceShank.Checked)
+            {
+                return value >= _parameters.MinShankDiameterValue &&
+                       value <= _parameters.MaxShankDiameterValue;
+            }
+            if (textBox == TextShankLengthValue &&
+                CheckClearanceShank.Checked)
+            {
+                return value >= _parameters.MinShankLengthValue &&
+                       value <= _parameters.MaxShankLengthValue;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Получает имя поля для сообщения об ошибке.
+        /// </summary>
+        private string GetFieldName(TextBox textBox)
+        {
+            if (textBox == TextDiameter) return "Диаметр";
+            if (textBox == TextLength) return "Длина рабочей части";
+            if (textBox == TextTotalLength) return "Общая длина";
+            if (textBox == TextAngle) return "Угол при вершине";
+            if (textBox == TextConeValue) return "Обратный конус";
+            if (textBox == TextShankDiameterValue) return "Диаметр хвостовика";
+            if (textBox == TextShankLengthValue) return "Длина хвостовика";
+            return "Поле";
+        }
+
+        /// <summary>
+        /// Обновляет параметр из текстового поля.
+        /// </summary>
+        private void UpdateParameterFromTextBox(TextBox textBox, double value)
+        {
+            if (textBox == TextDiameter) _parameters.Diameter = value;
+            else if (textBox == TextLength) _parameters.Length = value;
+            else if (textBox == TextTotalLength) _parameters.TotalLength = value;
+            else if (textBox == TextAngle) _parameters.Angle = value;
+            else if (textBox == TextConeValue) _parameters.ConeValue = value;
+            else if (textBox == TextShankDiameterValue)
+                _parameters.ShankDiameterValue = value;
+            else if (textBox == TextShankLengthValue)
+                _parameters.ShankLengthValue = value;
+        }
+
+        /// <summary>
+        /// Обрабатывает изменение состояния флажка обратного конуса.
+        /// </summary>
+        private void CheckClearanceConeCheckedChanged(object sender,
+            EventArgs e)
         {
             SwitchToCustomPreset();
 
@@ -467,19 +479,14 @@ namespace ORSAPR
             UpdateVisibility();
 
             // Перевалидируем поле обратного конуса при изменении чекбокса
-            if (_validationMap != null &&
-                _validationMap.ContainsKey(TextConeValue))
-            {
-                TextBoxTextChanged(TextConeValue, EventArgs.Empty);
-            }
+            ValidateAndUpdateTextField(TextConeValue);
         }
 
         /// <summary>
-        /// Обработчик события изменения состояния чекбокса хвостовика.
+        /// Обрабатывает изменение состояния флажка хвостовика.
         /// </summary>
-        /// <param name="sender">Источник события.</param>
-        /// <param name="e">Данные события.</param>
-        private void CheckClearanceShankCheckedChanged(object sender, EventArgs e)
+        private void CheckClearanceShankCheckedChanged(object sender,
+            EventArgs e)
         {
             SwitchToCustomPreset();
 
@@ -499,64 +506,99 @@ namespace ORSAPR
             UpdateVisibility();
 
             // Перевалидируем поля хвостовика при изменении чекбокса
-            if (_validationMap != null)
-            {
-                if (_validationMap.ContainsKey(TextShankDiameterValue))
-                {
-                    TextBoxTextChanged(TextShankDiameterValue, EventArgs.Empty);
-                }
-
-                if (_validationMap.ContainsKey(TextShankLengthValue))
-                {
-                    TextBoxTextChanged(TextShankLengthValue, EventArgs.Empty);
-                }
-            }
+            ValidateAndUpdateTextField(TextShankDiameterValue);
+            ValidateAndUpdateTextField(TextShankLengthValue);
         }
 
         /// <summary>
-        /// Обработчик события нажатия кнопки "Построить модель".
+        /// Обрабатывает нажатие кнопки "Построить".
         /// </summary>
-        /// <param name="sender">Источник события.</param>
-        /// <param name="e">Данные события.</param>
         private void ButtonBuildClick(object sender, EventArgs e)
         {
-            // Используем TryUpdateParameters для валидации и обновления параметров
-            if (!_validator.TryUpdateParameters(TextDiameter.Text,
-                TextLength.Text, TextTotalLength.Text, TextAngle.Text,
-                TextConeValue.Text, CheckClearanceCone.Checked,
-                TextShankDiameterValue.Text, TextShankLengthValue.Text,
-                CheckClearanceShank.Checked,
-                out List<string> errors))
+            // Обновляем все параметры из формы
+            UpdateParametersFromForm();
+
+            // Валидируем бизнес-правила
+            var validationErrors = _parameters.ValidateAll();
+
+            if (validationErrors.Count > 0)
             {
-                ShowErrorMessage(string.Join("\n", errors));
+                MessageBox.Show(string.Join("\n\n", validationErrors),
+                    "Ошибки валидации", MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
                 return;
             }
 
-            // Проверяем бизнес-правила (зависимости между полями)
-            List<string> rulesErrors = _parameters.ValidateRules();
-            if (rulesErrors.Count > 0)
-            {
-                ShowErrorMessage(string.Join("\n", rulesErrors));
-                return;
-            }
-
-            // Все проверки пройдены - строим модель
+            // Строим модель
             bool success = _builder.Build(_parameters);
-            if (!success)
+
+            if (success)
             {
-                ShowErrorMessage("Не удалось построить модель. " +
-                    "Проверьте подключение к КОМПАС-3D");
+                MessageBox.Show("Модель успешно построена!", "Успех",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            else
+            {
+                MessageBox.Show("Ошибка при построении модели.", "Ошибка",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
         /// <summary>
-        /// Отображает сообщение об ошибке в диалоговом окне.
+        /// Обновляет все параметры из формы.
         /// </summary>
-        /// <param name="message">Текст сообщения об ошибке.</param>
-        private void ShowErrorMessage(string message)
+        private void UpdateParametersFromForm()
         {
-            MessageBox.Show(message, "Ошибка",
-                MessageBoxButtons.OK, MessageBoxIcon.Error);
+            // Основные параметры
+            UpdateParameterFromForm(TextDiameter, "Диаметр",
+                value => _parameters.Diameter = value);
+            UpdateParameterFromForm(TextLength, "Длина рабочей части",
+                value => _parameters.Length = value);
+            UpdateParameterFromForm(TextTotalLength, "Общая длина",
+                value => _parameters.TotalLength = value);
+            UpdateParameterFromForm(TextAngle, "Угол при вершине",
+                value => _parameters.Angle = value);
+
+            // Опциональные параметры
+            _parameters.ClearanceCone = CheckClearanceCone.Checked;
+            if (CheckClearanceCone.Checked)
+            {
+                UpdateParameterFromForm(TextConeValue, "Обратный конус",
+                    value => _parameters.ConeValue = value);
+            }
+            else
+            {
+                _parameters.ConeValue = 0;
+            }
+
+            _parameters.ClearanceShank = CheckClearanceShank.Checked;
+            if (CheckClearanceShank.Checked)
+            {
+                UpdateParameterFromForm(TextShankDiameterValue,
+                    "Диаметр хвостовика",
+                    value => _parameters.ShankDiameterValue = value);
+                UpdateParameterFromForm(TextShankLengthValue,
+                    "Длина хвостовика",
+                    value => _parameters.ShankLengthValue = value);
+            }
+            else
+            {
+                _parameters.ShankDiameterValue = 0;
+                _parameters.ShankLengthValue = 0;
+            }
+        }
+
+        /// <summary>
+        /// Обновляет параметр из формы.
+        /// </summary>
+        private void UpdateParameterFromForm(TextBox textBox,
+            string fieldName, Action<double> setter)
+        {
+            var result = Parameters.TryParseDouble(textBox.Text, fieldName);
+            if (result.success && ValidateRange(textBox, result.value))
+            {
+                setter(result.value);
+            }
         }
     }
 }

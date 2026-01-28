@@ -9,9 +9,11 @@ namespace ORSAPR
     /// <summary>
     /// Класс представляющий пресет параметров сверла.
     /// </summary>
+    /// <summary>
+    /// Класс представляющий пресет параметров сверла.
+    /// </summary>
     public class DrillPreset
     {
-
         /// <summary>
         /// Название пресета.
         /// </summary>
@@ -93,9 +95,9 @@ namespace ORSAPR
         }
 
         /// <summary>
-        /// Возвращает название пресета для отображения в UI
+        /// Возвращает название пресета для отображения в UI.
         /// </summary>
-        /// <returns>Название пресета</returns>
+        /// <returns>Название пресета.</returns>
         public override string ToString() => Name;
     }
 }

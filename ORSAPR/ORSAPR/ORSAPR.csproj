@@ -47,7 +47,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DrillPreset.cs" />
     <Compile Include="MainForm.cs">
       <SubType>Form</SubType>
     </Compile>

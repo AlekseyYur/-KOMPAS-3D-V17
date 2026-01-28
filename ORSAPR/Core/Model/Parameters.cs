@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Security;
 
 namespace ORSAPR
@@ -342,20 +343,20 @@ namespace ORSAPR
             _clearanceCone = true;
 
             // Средние значения зависимых параметров
-            _coneValue = (_diameter * CoefficientForDependenciesCone1 + 
+            _coneValue = (_diameter * CoefficientForDependenciesCone1 +
                 _diameter * CoefficientForDependenciesCone2)
                 / CoefficientForDependencies;
-            _length = (CoefficientForDependenciesLength1 * 
-                _diameter + CoefficientForDependenciesLength2 * 
+            _length = (CoefficientForDependenciesLength1 *
+                _diameter + CoefficientForDependenciesLength2 *
                 _diameter) / CoefficientForDependencies;
             _totalLength = Math.Min(_length +
                 CoefficientForDependenciesLength3, 205);
 
             _clearanceShank = false;
-            _shankDiameterValue = (_diameter 
+            _shankDiameterValue = (_diameter
                 * CoefficientForDependenciesShank + _diameter
                 * CoefficientForDependencies) / CoefficientForDependencies;
-            _shankLengthValue = ((_totalLength - _length) * 
+            _shankLengthValue = ((_totalLength - _length) *
                 CoefficientForDependencies + (_totalLength - _length)
                 * CoefficientForDependenciesLength1)
                 / CoefficientForDependencies;
@@ -374,93 +375,121 @@ namespace ORSAPR
             _minTotalLength = _length + CoefficientForDependenciesLength3;
             _minConeValue = _diameter * CoefficientForDependenciesCone1;
             _maxConeValue = _diameter * CoefficientForDependenciesCone2;
-            _minShankDiameterValue = _diameter * 
+            _minShankDiameterValue = _diameter *
                 CoefficientForDependenciesShank;
-            _maxShankDiameterValue = _diameter * 
+            _maxShankDiameterValue = _diameter *
                 CoefficientForDependencies;
-            _minShankLengthValue = (_totalLength - _length) * 
+            _minShankLengthValue = (_totalLength - _length) *
                 CoefficientForDependencies;
-            _maxShankLengthValue = (_totalLength - _length) * 
+            _maxShankLengthValue = (_totalLength - _length) *
                 CoefficientForDependenciesLength1;
         }
 
         /// <summary>
-        /// Валидирует бизнес-правила (зависимости между полями).
+        /// Валидирует все параметры и возвращает список ошибок.
         /// </summary>
-        /// <returns>Список ошибок валидации правил.</returns>
-        public List<string> ValidateRules()
+        /// <returns>Список ошибок валидации.</returns>
+        public List<string> ValidateAll()
         {
             var errors = new List<string>();
 
-            //Проверка зависимости длины рабочей части от диаметра
-            if (_length < MinLength || _length > MaxLength)
+            // Валидация основных параметров
+            ValidateRange(_angle, _minAngle, _maxAngle,
+                "Угол при вершине", "градусов", errors);
+
+            ValidateRange(_diameter, _minDiameter, _maxDiameter,
+                "Диаметр", "мм", errors);
+
+            ValidateRange(_length, _minLength, _maxLength,
+                "Длина рабочей части", "мм", errors,
+                $"({CoefficientForDependenciesLength1}×" +
+                $"{_diameter.ToString(NumberFormat)} - " +
+                $"{CoefficientForDependenciesLength2}×" +
+                $"{_diameter.ToString(NumberFormat)})");
+
+            ValidateRange(_totalLength, _minTotalLength, _maxTotalLength,
+                "Общая длина", "мм", errors,
+                $"({_length.ToString(NumberFormat)}+" +
+                $"{CoefficientForDependenciesLength3} - " +
+                $"{_maxTotalLength})");
+
+            // Валидация опциональных параметров
+            if (_clearanceCone)
             {
-                errors.Add($"Длина рабочей части должна быть в диапазоне " +
-                   $"{_minLength.ToString(NumberFormat)} - " +
-                   $"{_maxLength.ToString(NumberFormat)} мм " +
-                   $"({CoefficientForDependenciesLength1}" +
-                   $"×{_diameter.ToString(NumberFormat)}" +
-                   $" - {CoefficientForDependenciesLength2}" +
-                   $"×{_diameter.ToString(NumberFormat)})");
+                ValidateRange(_coneValue, _minConeValue, _maxConeValue,
+                    "Обратный конус", "мм", errors,
+                    $"({CoefficientForDependenciesCone1}×" +
+                    $"{_diameter.ToString(NumberFormat)} - " +
+                    $"{CoefficientForDependenciesCone2}×" +
+                    $"{_diameter.ToString(NumberFormat)})");
             }
 
-            // Проверка общей длины
-            if (_totalLength < _minTotalLength ||
-                _totalLength > MaxTotalLength)
+            if (_clearanceShank)
             {
-                errors.Add($"Общая длина должна быть в диапазоне " +
-                   $"{_minTotalLength.ToString(NumberFormat)} - " +
-                   $"{MaxTotalLength.ToString(NumberFormat)} мм " +
-                   $"({_length.ToString(NumberFormat)}+" +
-                   $"{CoefficientForDependenciesLength3} - " +
-                   $"{MaxTotalLength})");
-            }
+                ValidateRange(_shankDiameterValue, _minShankDiameterValue,
+                    _maxShankDiameterValue, "Диаметр хвостовика",
+                    "мм", errors,
+                    $"({CoefficientForDependenciesShank}×" +
+                    $"{_diameter.ToString(NumberFormat)} - " +
+                    $"{CoefficientForDependencies}×" +
+                    $"{_diameter.ToString(NumberFormat)})");
 
-            // Проверка обратного конуса (если включен)
-            if (_clearanceCone && (_coneValue < _minConeValue ||
-                _coneValue > _maxConeValue))
-            {
-                errors.Add($"Значение обратного конуса должно быть в " +
-                  $"диапазоне {_minConeValue.ToString(NumberFormat)} - " +
-                  $"{_maxConeValue.ToString(NumberFormat)} мм " +
-                  $"({CoefficientForDependenciesCone1}" +
-                  $"×{_diameter.ToString(NumberFormat)} - " +
-                  $"{CoefficientForDependenciesCone2}" +
-                  $"×{_diameter.ToString(NumberFormat)})");
-            }
-
-            // Проверка диаметра хвостовика (если включен)
-            if (_clearanceShank && (_shankDiameterValue < _minShankDiameterValue ||
-                _shankDiameterValue > _maxShankDiameterValue))
-            {
-                errors.Add($"Значение диаметра хвостовика должно быть в " +
-                  $"диапазоне" +
-                  $" {_minShankDiameterValue.ToString(NumberFormat)} - " +
-                  $"{_maxShankDiameterValue.ToString(NumberFormat)} мм " +
-                  $"({CoefficientForDependenciesShank}" +
-                  $"×{_diameter.ToString(NumberFormat)} - " +
-                  $"{CoefficientForDependencies}" +
-                  $"×{_diameter.ToString(NumberFormat)})");
-            }
-
-            // Проверка длины хвостовика (если включен)
-            if (_clearanceShank && (_shankLengthValue < _minShankLengthValue ||
-                _shankLengthValue > _maxShankLengthValue))
-            {
-                double difference = _totalLength - _length;
-                errors.Add($"Длина хвостовика должна быть в диапазоне " + 
-                    $"{_minShankLengthValue.ToString(NumberFormat)}" +
-                    $" - " +
-                    $"{_maxShankLengthValue.ToString(NumberFormat)}" +
-                    $" мм ({CoefficientForDependencies}" +
-                    $"×({_totalLength.ToString(NumberFormat)}-" +
+                ValidateRange(_shankLengthValue, _minShankLengthValue,
+                    _maxShankLengthValue, "Длина хвостовика",
+                    "мм", errors,
+                    $"({CoefficientForDependencies}×" +
+                    $"({_totalLength.ToString(NumberFormat)}-" +
                     $"{_length.ToString(NumberFormat)}) - " +
-                    $"{CoefficientForDependenciesLength1}" +
-                    $"×({_totalLength.ToString(NumberFormat)}-" +
+                    $"{CoefficientForDependenciesLength1}×" +
+                    $"({_totalLength.ToString(NumberFormat)}-" +
                     $"{_length.ToString(NumberFormat)}))");
             }
 
             return errors;
         }
+
+        /// <summary>
+        /// Валидирует диапазон значения.
+        /// </summary>
+        private void ValidateRange(double value, double min, double max,
+            string fieldName, string unit, List<string> errors,
+            string formula = null)
+        {
+            if (value < min || value > max)
+            {
+                string error = $"{fieldName} должен быть в диапазоне " +
+                    $"{min.ToString(NumberFormat)} - " +
+                    $"{max.ToString(NumberFormat)} {unit}";
+
+                if (!string.IsNullOrEmpty(formula))
+                {
+                    error += $" {formula}";
+                }
+
+                errors.Add(error);
+            }
+        }
+
+        /// <summary>
+        /// Парсит строку в double с проверкой.
+        /// </summary>
+        public static (bool success, double value, string error)
+            TryParseDouble(string input, string fieldName)
+        {
+            if (string.IsNullOrEmpty(input))
+            {
+                return (false, 0, $"{fieldName} не может быть пустым");
+            }
+
+            if (!double.TryParse(input, NumberStyles.Any,
+                CultureInfo.CurrentCulture, out double value))
+            {
+                return (false, 0,
+                    $"Неверный формат числа в поле '{fieldName}'");
+            }
+
+            return (true, value, null);
+        }
+
     }
 }
