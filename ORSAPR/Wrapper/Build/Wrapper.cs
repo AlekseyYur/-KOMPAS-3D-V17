@@ -143,7 +143,6 @@ namespace ORSAPR
                 var sketchDefinition =
                     (ksSketchDefinition)sketch.GetDefinition();
                 return sketchDefinition.BeginEdit();
-                //TODO: ?? +
             }
             catch (Exception ex)
             {
@@ -165,7 +164,6 @@ namespace ORSAPR
                 var sketchDefinition =
                     (ksSketchDefinition)sketch.GetDefinition();
                 sketchDefinition.EndEdit();
-                //TODO: ?? +
             }
             catch (Exception ex)
             {
@@ -188,7 +186,6 @@ namespace ORSAPR
             try
             {
                 doc2D.ksLineSeg(x1, y1, x2, y2, 1);
-                //TODO: ?? +
             }
             catch (Exception ex)
             {
@@ -210,7 +207,6 @@ namespace ORSAPR
             try
             {
                 doc2D.ksLineSeg(x1, y1, x2, y2, 3);
-                //TODO: ?? +
             }
             catch (Exception ex)
             {
@@ -306,7 +302,6 @@ namespace ORSAPR
         {
             ksEntity spiralEntity = _part.NewEntity(
                 (short)Obj3dType.o3d_cylindricSpiral);
-            //TODO: {} +
             if (spiralEntity == null)
             {
                 return null;
@@ -314,7 +309,6 @@ namespace ORSAPR
 
             ksCylindricSpiralDefinition spiralDef =
                 spiralEntity.GetDefinition();
-            //TODO: {} +
             if (spiralDef == null)
             {
                 return null;

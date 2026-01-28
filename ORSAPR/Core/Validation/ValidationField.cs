@@ -24,7 +24,6 @@ namespace Core.Model
         /// </summary>
         private Parameters _parameters;
 
-        //TODO: XML +
         /// <summary>
         /// Формат отображения чисел с одним десятичным знаком.
         /// </summary>
@@ -310,7 +309,7 @@ namespace Core.Model
             bool isEnabled = true)
         {
             var validationResult = validationFunc(input);
-
+            //TODO: ??
             if (validationResult.IsValid)
             {
                 updateAction((T)Convert.ChangeType
@@ -348,37 +347,30 @@ namespace Core.Model
             bool allValid = true;
 
             // Валидируем и обновляем каждое поле
-            //TODO: duplication +
             allValid &= ValidateAndUpdate<double>(diameter, ValidateDiameter,
                 x => _parameters.Diameter = x, errors);
 
-            //TODO: duplication +
             allValid &= ValidateAndUpdate<double>(length, ValidateLength,
                 x => _parameters.Length = x, errors);
 
-            //TODO: duplication +
             allValid &= ValidateAndUpdate<double>(totalLength,
                 ValidateTotalLength,
                 x => _parameters.TotalLength = x, errors);
 
-            //TODO: duplication +
             allValid &= ValidateAndUpdate<double>(angle, ValidateAngle,
                 x => _parameters.Angle = x, errors);
 
             _parameters.ClearanceCone = coneEnabled;
-            //TODO: duplication +
             allValid &= ValidateAndUpdate<double>(coneValue, 
                 x => ValidateConeValue(x, coneEnabled), 
                 x => _parameters.ConeValue = x, errors, coneEnabled);
 
             _parameters.ClearanceShank = shankEnabled;
-            //TODO: duplication +
             allValid &= ValidateAndUpdate<double>(shankDiameterValue, 
                 x => ValidateShankDiameterValue(x, shankEnabled), 
                 x => _parameters.ShankDiameterValue = x, errors,
                 shankEnabled);
 
-            //TODO: duplication +
             allValid &= ValidateAndUpdate<double>(shankLengthValue, 
                 x => ValidateShankLengthValue(x, shankEnabled),
                 x => _parameters.ShankLengthValue = x, errors, shankEnabled);

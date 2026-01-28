@@ -104,25 +104,21 @@ namespace ORSAPR
         /// </summary>
         private double _maxConeValue;
 
-        //TODO: XML +
         /// <summary>
         /// Минимальное доступное значение диаметра хвостовика.
         /// </summary>
         private double _minShankDiameterValue;
 
-        //TODO: XML +
         /// <summary>
         /// Максимальное доступное значение диаметра хвостовика.
         /// </summary>
         private double _maxShankDiameterValue;
 
-        //TODO: XML +
         /// <summary>
         /// Минимальное доступное значение длины хвостовика.
         /// </summary>
         private double _minShankLengthValue;
 
-        //TODO: XML +
         /// <summary>
         /// Максимальное доступное значение длины хвостовика.
         /// </summary>
@@ -346,7 +342,6 @@ namespace ORSAPR
             _clearanceCone = true;
 
             // Средние значения зависимых параметров
-            //TODO: to const +
             _coneValue = (_diameter * CoefficientForDependenciesCone1 + 
                 _diameter * CoefficientForDependenciesCone2)
                 / CoefficientForDependencies;
@@ -374,7 +369,6 @@ namespace ORSAPR
         /// </summary>
         private void CalculateDepended()
         {
-            //TODO: to const +
             _minLength = CoefficientForDependenciesLength1 * _diameter;
             _maxLength = CoefficientForDependenciesLength2 * _diameter;
             _minTotalLength = _length + CoefficientForDependenciesLength3;
@@ -401,7 +395,6 @@ namespace ORSAPR
             //Проверка зависимости длины рабочей части от диаметра
             if (_length < MinLength || _length > MaxLength)
             {
-                //TODO: to const +
                 errors.Add($"Длина рабочей части должна быть в диапазоне " +
                    $"{_minLength.ToString(NumberFormat)} - " +
                    $"{_maxLength.ToString(NumberFormat)} мм " +

@@ -317,8 +317,8 @@ namespace ORSAPR
         {
             SwitchToCustomPreset();
 
-            // TODO: refactor +
             var textBox = sender as TextBox;
+
             if (textBox == null || _validationMap == null) return;
 
             if (_validationMap.TryGetValue(textBox, out var validateFunc))

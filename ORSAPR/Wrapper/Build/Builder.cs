@@ -38,19 +38,16 @@ namespace ORSAPR
         /// </summary>
         private const double ShankDeparture = 0.05;
 
-        //TODO: XML +
         /// <summary>
         /// Перый коэфициент отступа крепления хвостовика.
         /// </summary>
         private const double ShankBracingLength1 = 0.45;
 
-        //TODO: XML +
         /// <summary>
         /// Второй коэфициент отступа крепления хвостовика.
         /// </summary>
         private const double ShankBracingLength2 = 0.55;
 
-        //TODO: XML +
         /// <summary>
         /// Третий коэфициент отступа крепления хвостовика.
         /// </summary>
@@ -326,8 +323,6 @@ namespace ORSAPR
             _wrapper.DrawAxisLine(doc2DAngle, za1, ya1, za2, ya2);
         }
 
-
-        //TODO: remove +
         /// <summary>
         /// Создает упоры на хвостовике.
         /// </summary>
