@@ -534,8 +534,7 @@ namespace ORSAPR
 
             if (success)
             {
-                MessageBox.Show("Модель успешно построена!", "Успех",
-                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+
             }
             else
             {
