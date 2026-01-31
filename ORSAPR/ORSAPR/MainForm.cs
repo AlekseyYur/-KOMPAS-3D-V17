@@ -133,7 +133,7 @@ namespace ORSAPR
         /// </summary>
         private string FormatRangeLabel(double min, double max, string unit)
         {
-            return $"{min:NumberFormat} — {max:NumberFormat} {unit}";
+            return $"{min:F2} — {max:F2} {unit}";
         }
 
         /// <summary>
@@ -446,15 +446,34 @@ namespace ORSAPR
         /// </summary>
         private void UpdateParameterFromTextBox(TextBox textBox, double value)
         {
-            if (textBox == TextDiameter) _parameters.Diameter = value;
-            else if (textBox == TextLength) _parameters.Length = value;
-            else if (textBox == TextTotalLength) _parameters.TotalLength = value;
-            else if (textBox == TextAngle) _parameters.Angle = value;
-            else if (textBox == TextConeValue) _parameters.ConeValue = value;
+            if (textBox == TextDiameter)
+            {
+                _parameters.Diameter = value;
+            }
+            else if (textBox == TextLength)
+            {
+                _parameters.Length = value;
+            }
+            else if (textBox == TextTotalLength)
+            {
+                _parameters.TotalLength = value;
+            }
+            else if (textBox == TextAngle)
+            {
+                _parameters.Angle = value;
+            }
+            else if (textBox == TextConeValue)
+            {
+                _parameters.ConeValue = value;
+            }
             else if (textBox == TextShankDiameterValue)
+            {
                 _parameters.ShankDiameterValue = value;
+            }
             else if (textBox == TextShankLengthValue)
+            {
                 _parameters.ShankLengthValue = value;
+            }
         }
 
         /// <summary>
