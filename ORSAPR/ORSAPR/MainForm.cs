@@ -431,13 +431,34 @@ namespace ORSAPR
         /// </summary>
         private string GetFieldName(TextBox textBox)
         {
-            if (textBox == TextDiameter) return "Диаметр";
-            if (textBox == TextLength) return "Длина рабочей части";
-            if (textBox == TextTotalLength) return "Общая длина";
-            if (textBox == TextAngle) return "Угол при вершине";
-            if (textBox == TextConeValue) return "Обратный конус";
-            if (textBox == TextShankDiameterValue) return "Диаметр хвостовика";
-            if (textBox == TextShankLengthValue) return "Длина хвостовика";
+            if (textBox == TextDiameter)
+            {
+                return "Диаметр";
+            }
+            if (textBox == TextLength)
+            {
+                return "Длина рабочей части";
+            }
+            if (textBox == TextTotalLength)
+            {
+                return "Общая длина";
+            }
+            if (textBox == TextAngle)
+            {
+                return "Угол при вершине";
+            }
+            if (textBox == TextConeValue)
+            {
+                return "Обратный конус";
+            }
+            if (textBox == TextShankDiameterValue)
+            {
+                return "Диаметр хвостовика";
+            }
+            if (textBox == TextShankLengthValue)
+            {
+                return "Длина хвостовика";
+            }
             return "Поле";
         }
 
