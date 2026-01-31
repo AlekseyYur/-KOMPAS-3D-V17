@@ -133,7 +133,7 @@ namespace ORSAPR
         /// </summary>
         private string FormatRangeLabel(double min, double max, string unit)
         {
-            return $"{min:F2} — {max:F2} {unit}";
+            return $"{min:NumberFormat} — {max:NumberFormat} {unit}";
         }
 
         /// <summary>
@@ -368,13 +368,15 @@ namespace ORSAPR
 
             bool isValid = result.success && ValidateRange(textBox, result.value);
 
-            textBox.BackColor = isValid ?
-                SystemColors.Window : Color.LightPink;
-
             if (isValid)
             {
+                textBox.BackColor = SystemColors.Window;
                 UpdateParameterFromTextBox(textBox, result.value);
                 UpdateRangeLabels();
+            }
+            else
+            {
+                textBox.BackColor = Color.LightPink;
             }
         }
 
